@@ -1,0 +1,532 @@
+@media (max-width : 1699) {
+  .filters {
+    flex-wrap: wrap;
+  }
+
+}
+
+@media (min-width:1400px) {
+  .container {
+    max-width: 1600px !important;
+  }
+}
+
+
+@media (max-width: 1399px) {
+  .account-step-one::after {
+    content: "";
+    position: absolute;
+    top: 40px;
+    right: -42px;
+    width: 50%;
+    height: 1px;
+    background: #000;
+  }
+
+  .filters {
+    flex-wrap: wrap;
+  }
+
+  .admin-frm-vendor-bx {
+    padding: 0 50px 50px 50px;
+  }
+
+}
+
+@media (max-width: 1199px) {
+  .admin-frm-vendor-bx {
+    padding: 0 50px 50px 50px;
+  }
+
+  .filters {
+    flex-wrap: wrap;
+  }
+
+  .reprt-mark::after {
+    width: 200px;
+  }
+
+
+}
+
+
+@media (min-width: 992px) {
+  .mobile-menu-btn {
+    display: none;
+  }
+
+  .sidebar-close-btn {
+    display: none;
+  }
+
+  .dashbrd-left-asidebar {
+    position: static;
+    width: auto;
+    height: auto;
+    box-shadow: none;
+    left: 0;
+  }
+
+  .filters {
+    flex-wrap: wrap;
+  }
+
+  .attendence-content-first {
+    width: 50px;
+    height: 50px;
+
+  }
+
+  .attendence-content-bx p {
+    font-size: 14px;
+  }
+
+}
+
+@media (max-width : 991px) {
+
+  .dashbrd-left-asidebar {
+    border-radius: 0;
+  }
+
+  .mobile-menu-btn {
+    color: #fff !important;
+  }
+
+  .dashboard-saller-sec {
+    padding: 20px 0;
+  }
+
+  .dashbrd-left-asidebar {
+    padding: 50px 15px;
+  }
+
+  .tp-saller-header .header-logo .logo-img {
+    display: none;
+  }
+
+  .dash-search-dta-bx {
+    flex-wrap: wrap;
+  }
+
+  .admn-mob-close-bx {
+    margin-top: 8px;
+    margin-right: 15px;
+  }
+
+  .tp-header-search-br {
+    display: none;
+  }
+
+
+
+  /* Admin Resposnive Start
+   */
+  .dashboard-left-side {
+    position: fixed;
+    top: 0;
+    left: 0;
+    /* min-height: 100vh; */
+    width: 250px;
+    z-index: 1050;
+    background-color: #fff;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    overflow-y: scroll !important;
+    height: 100%;
+  }
+
+
+  .dashboard-left-side {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    overflow-y: scroll;
+  }
+
+  .dashboard-left-side::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dashboard-left-side.mobile-show {
+    transform: translateX(0);
+  }
+
+  .mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1040;
+    display: none;
+  }
+
+  .mobile-overlay.show {
+    display: block;
+  }
+
+  /* Admin Resposnive End
+   */
+
+  .dashboard-right-side .tp-header-section .tp-right-admin-bx {
+    gap: 5px;
+  }
+
+  .lab-chart-crd .apexcharts-legend {
+    position: absolute;
+    left: auto;
+    top: 30px !important;
+    right: 0px !important;
+  }
+
+  .patient-bio-list {
+    flex-wrap: wrap;
+  }
+
+
+
+  .admin-pisture-bx {
+    height: auto;
+  }
+
+  .admin-pisture-bx img {
+    height: 500px;
+    object-position: top;
+  }
+
+
+  .admin-frm-vendor-bx {
+    padding: 30px 0 30px 0;
+  }
+
+  .admin-login-section .all-tp-main-section,
+  .admin-login-section .all-tp-main-section .dashboard-right-side {
+    overflow: auto !important;
+  }
+
+  .admin-login-section {
+    overflow: auto !important;
+  }
+
+  .lab-login-frm-bx {
+    gap: 10px;
+  }
+
+  .patient-bio-tab {
+    padding: 15px;
+  }
+
+  .education-frm-bx {
+    padding: 15px;
+
+  }
+
+
+  .employee-tabs .nav-tabs {
+    flex-wrap: nowrap;
+    overflow-x: scroll;
+    text-wrap-mode: nowrap;
+  }
+
+  .patient-bio-tab .nav-tabs {
+    border: 0;
+    padding: 8px 0;
+    flex-wrap: nowrap;
+    text-wrap-mode: nowrap;
+    overflow-x: scroll;
+  }
+
+  .tp-sub-main-bx {
+    flex-wrap: wrap;
+  }
+
+  .edit-licence-tp-box::after {
+    /* content: "";
+    position: absolute;
+    left: 0;
+    height: 1px;
+    bottom: 45px !important;
+    width: 100%;
+    background-color: #000; */
+
+    display: none;
+  }
+
+  .account-step-bx {
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+  }
+
+  .account-step-icon {
+    font-size: 16px;
+  }
+
+  .account-step-main-bx {
+    align-items: start;
+  }
+
+  .account-step-crd h6 {
+    font-size: 14px;
+
+  }
+
+
+  .neo-health-frm-card {
+    padding: 20px;
+  }
+
+  .nw-account-add-bx::after {
+    display: none;
+  }
+
+  .admin-vndr-login h3 {
+    font-size: 32px;
+  }
+
+
+  .account-step-one::after {
+    content: "";
+    position: absolute;
+    top: 25px;
+    right: -55px;
+    width: 60%;
+    height: 1px;
+    background: #000;
+  }
+
+  .approve-title h5 {
+    font-size: 14px;
+  }
+
+  .sub-header-bx {
+    flex-wrap: wrap;
+  }
+
+  .view-employee-bx {
+    padding: 15px;
+  }
+
+  .filters {
+    flex-wrap: wrap;
+  }
+
+  .patient-details-bx {
+    /* flex-wrap: wrap; */
+    flex-direction: column;
+  }
+
+  .patient-bio-content h6 {
+    font-size: 20px;
+  }
+
+  /* .laboratory-card{
+      flex-wrap: wrap;
+    } */
+
+  /* .add-patients-clients img {
+    width: 300px;
+    height: 175px;
+} */
+
+  .carding-bx {
+    flex-wrap: wrap;
+  }
+
+  .card-down-bx {
+    flex-direction: row !important;
+  }
+
+  .laboratory-bill-crd {
+    flex-wrap: nowrap;
+    flex-direction: row;
+  }
+
+  .sub-tab-brd {
+    padding: 10px;
+  }
+
+  .new-invoice-card {
+    padding: 10px;
+  }
+
+  .reprt-barcd {
+    flex-direction: column;
+  }
+
+  .reprt-mark::after {
+    width: 200px;
+  }
+
+  .laboratory-name h5 {
+    font-size: 16px;
+  }
+
+  .laboratory-name p {
+    font-size: 14px;
+  }
+
+  .appointment-booking-list .appoint-item {
+    font-size: 14px;
+  }
+
+  .first_para {
+    font-size: 16px !important;
+  }
+
+  .laboratory-nw-box {
+    max-width: 100%;
+  }
+
+  .laboratory-sub-bx {
+    max-width: 100%;
+  }
+
+  .return-box {
+    display: block;
+  }
+
+  .admin-table-bx img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .chat-tp-header {
+    border-left: 1px solid #DBE0E5;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+  }
+
+  .chat-left-usr-bx {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+
+  }
+
+  .vw-contract-bx {
+    flex-wrap: wrap;
+  }
+
+  .account-step-crd {
+    width: 150px;
+  }
+
+  .account-step-one::after {
+    content: "";
+    position: absolute;
+    top: 25px;
+    right: -45px;
+    width: 60%;
+    height: 1px;
+    background: #000;
+  }
+
+  .new-filters {
+    flex-direction: column;
+  }
+
+  .new-filters select {
+    width: 100%;
+  }
+
+  .new-filters .field input {
+    width: 100%;
+  }
+
+  .new-filters .nw-thm-btn {
+    width: 100%;
+  }
+
+  .new-lab-profile-details {
+    width: 100%;
+  }
+
+  .new-lab-profile-details img {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .new-lab-patient-details .patient-social-bx {
+    width: 100%;
+  }
+
+  .barcd-scannr {
+    width: 100%;
+  }
+
+  .chat-bubble {
+    padding: 5px 10px;
+  }
+
+  .all-chating-content-bx {
+    padding: 10px;
+  }
+
+  .chat-left-usr-bx {
+    height: 500px;
+  }
+
+  .chat-bubble.nw-left {
+    max-width: 100%;
+  }
+
+  .chat-bubble.nw-right {
+    max-width: 100%;
+  }
+
+  .laboratory-appointment-box{
+    flex-direction: column;
+    gap: 5px;
+  }
+
+   .laboratory-appointment-box .new-filters{
+width: 100%;
+  }
+
+
+
+}
+
+
+
+@media (max-width : 767px) {
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .account-step-one::after {
+    content: "";
+    position: absolute;
+    top: 25px;
+    right: -12px;
+    width: 30%;
+    height: 1px;
+    background: #000;
+  }
+
+  .laboratory-card {
+    flex-wrap: wrap;
+  }
+  .account-step-crd {
+    width: 75px;
+  }
+}
+
+@media (max-width : 567px) {
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .account-step-one::after {
+    content: "";
+    position: absolute;
+    top: 25px;
+    right: -8px;
+    width: 25%;
+    height: 1px;
+    background: #000;
+  }
+}

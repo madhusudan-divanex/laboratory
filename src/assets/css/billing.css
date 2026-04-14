@@ -1,0 +1,452 @@
+@page {
+  size: A4;
+  /* margin: 12mm; */
+  margin: 0;
+}
+
+.a4-page {
+  width: 210mm;
+  min-height: 297mm;
+  /* margin: 0 auto; */
+  background: white;
+  position: relative;
+  overflow: hidden;
+  display: block;
+  page-break-after: always; 
+  break-after: page; 
+}
+
+.a4-page:last-child {
+  page-break-after: auto;
+}
+
+
+table, tr, td, th {
+  page-break-inside: avoid !important;
+}
+
+.nh-inv-test-card,
+.nh-inv-box,
+.nh-inv-billing-box,
+.nh-inv-notes-section {
+  page-break-inside: avoid !important;
+  break-inside: avoid;
+}
+
+
+/* Watermark */
+/* .watermark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  user-select: none;
+  z-index: 9;
+} */
+
+/* .watermark span {
+  transform: rotate(-32deg);
+  font-size: 68px;
+  letter-spacing: 0.3em;
+  color: rgba(0, 180, 181, 0.2);
+  font-weight: 800;
+  white-space: nowrap;
+} */
+
+.watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-32deg);
+  font-size: 70px;
+  letter-spacing: 0.3em;
+  color: rgba(0, 180, 181, 0.15);
+  font-weight: 800;
+  white-space: nowrap;
+  pointer-events: none;
+    user-select: none;
+  z-index: 9; 
+}
+
+
+.content-layer {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  padding: 20mm 12mm; 
+  height: 100%;
+  box-sizing: border-box;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  page-break-inside: auto;
+}
+
+
+@media print {
+  .a4-page {
+    box-shadow: none !important;
+    margin: 0;
+    break-after: page;
+    padding-top: 16mm !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+
+.neo-billing-cards{
+    background-color: #FFFFFF;
+    border: 1px solid #DBE0E5;
+    padding: 10px;
+    max-width: 210mm;
+    margin: 10px auto;
+}
+
+.neo-billing-cards h5{
+font-weight: 500;
+font-size: 16px;
+line-height: 100%;
+margin-bottom: 0;
+color: #4D667E;
+
+}
+
+/* Billing Header Start Css */
+
+.neo-billing-print-content h2{
+font-weight: 700;
+font-size: 32px;
+line-height: 100%;
+/* color: #000; */
+color: #052F59;
+margin-bottom: 5px;
+
+}
+
+.neo-billing-print-content h3{
+   font-weight: 600;
+font-size: 24px;
+line-height: 100%;
+color: #000;
+margin-bottom: 10px;
+}
+
+.neo-billing-print-content p{
+      font-weight: 500;
+font-size: 18px;
+line-height: 100%;
+color: #4D667E;
+margin-bottom: 12px;
+}
+
+/* .neo-invoice-tag {
+  display: inline-flex;             
+  border-radius: 9999px;              
+  border: 1px solid #00B4B51A;         
+background: #D7FFFF;
+  padding: 8px 12px;       
+ margin-bottom: 12px; 
+       
+} */
+
+.neo-invoice-tag h6{
+  font-size: 14px;   
+    font-weight: 600;    
+  text-transform: uppercase;         
+       
+  color: #052F59; 
+  margin-bottom: 0px; 
+  line-height: normal;
+}
+
+.neo-powered-by-content{
+    font-size: 16px;
+    color: #000;
+    font-weight: 500;
+    line-height: 100%;
+    margin-bottom: 12px;
+
+}
+
+
+/* Billing Header End Css */
+
+.nh-inv-box {
+  border: 1px solid #dee2e6;
+  background-color: #fff;
+  padding: 1rem;
+}
+
+.nh-inv-box h2{
+font-weight: 500;
+font-size: 24px;
+line-height: 100%;
+color: #000;
+margin-bottom: 10px;
+}
+
+.nh-inv-field {
+}
+
+.nh-inv-field-label {
+  font-size: 17px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #000;
+  margin-bottom: 0;
+}
+
+.nh-inv-field-value {
+ color: #4D667E;
+ font-size: 15px;
+ font-weight: 500;
+ margin-bottom: 5px;
+}
+
+.nh-inv-field-value-mono {
+  color: #4D667E;
+ font-size: 15px;
+ font-weight: 500;
+ margin-bottom: 5px;
+}
+
+/*  */
+
+.nh-inv-tests-section {
+  flex: 1;
+  padding-bottom: 20px;
+}
+
+.nh-inv-test-card {
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  /* margin-bottom: 1.5rem; */
+  page-break-inside: avoid;
+}
+
+
+
+.nh-inv-test-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  padding: 0.75rem 1.25rem;
+}
+
+.nh-inv-test-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #000;
+  margin-bottom: 0;
+}
+
+.nh-inv-test-verified {
+  font-size: 16px;
+  color: #4D667E;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+.nh-inv-table {
+  width: 100%;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+}
+
+.nh-inv-table-head-row {
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #6b7280;
+}
+
+.nh-inv-th {
+  padding: 0.75rem 1.25rem;
+  color: #4D667E;
+font-weight: 600;
+font-size: 16px;
+line-height: 100%;
+letter-spacing: 0%;
+
+}
+
+.nh-inv-td{
+     padding: 0.75rem 1.25rem; 
+     color: #000000;
+font-weight: 500;
+font-size: 14px;
+line-height: 100%;
+letter-spacing: 0%;
+
+}
+
+.nh-inv-td-name {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+
+.nh-inv-badge {
+  display: inline-flex;
+  border-radius: 9999px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* Interpretation & Notes Start */
+
+.nh-inv-notes-section {
+
+}
+
+.nh-inv-notes-main {
+      border: 1px solid #dee2e6;
+    background-color: #fff;
+  padding: 1rem;
+}
+
+.nh-inv-notes-side {
+   border: 1px solid #dee2e6;
+    background-color: #fff;
+  padding: 1rem;
+}
+
+.nh-inv-notes-title {
+  text-transform: capitalize;
+  font-weight: 500;
+    font-size: 24px;
+    line-height: 100%;
+    color: #000;
+    margin-bottom: 5px;
+
+}
+
+.nh-inv-auth-title {
+  text-transform: capitalize;
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 100%;
+    color: #000;
+
+}
+
+.nh-inv-notes-text {
+ color: #4D667E;
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 0px;
+}
+
+
+
+.nh-inv-auth-label h6{
+  font-weight: 500;
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #4D667E;
+}
+
+
+
+.nh-inv-auth-label p {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 0;
+  color: #6b7280;
+}
+
+/* Interpretation & Notes Css */
+
+/* Billing Footer */
+.nh-inv-footer {
+  padding-top: 10px;
+}
+
+
+.nh-inv-footer-text {
+  line-height: 1.4;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.nh-inv-footer-page {
+  white-space: nowrap;
+  font-weight: 500;
+  color: #334155;
+}
+
+/* Billing Notes Start */
+
+.nh-inv-billing-box {
+  border: 1px solid #dee2e6;
+    background-color: #fff;
+  padding: 16px;
+}
+
+.nh-inv-billing-box h3 {
+ font-weight: 500;
+    font-size: 24px;
+    line-height: 100%;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+.nh-inv-billing-list{
+    padding-left: 20px !important;
+    margin-bottom: 0;
+}
+
+.nh-inv-billing-list li{
+    font-size: 16px;
+    font-weight: 400;
+    color: #4D667E;
+    padding: 2px;
+    list-style-type: disc !important;
+  
+}
+
+.neo-banking-content {
+    margin-bottom: 10px;
+}
+
+.neo-banking-content h4{
+    font-size: 16px;
+    margin-bottom: 0;
+    font-weight: 500;
+    color: #4D667E;
+    line-height: normal;
+
+}
+
+.neo-banking-content h6{
+    font-size: 18px;
+    margin-bottom: 0;
+    font-weight: 600;
+    color: #000;
+    line-height: normal;
+
+}
+
+/* Billing Notes End */
+
+
+.page-break {
+  page-break-before: always;
+  break-before: page;
+}
