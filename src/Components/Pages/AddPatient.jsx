@@ -81,7 +81,10 @@ function AddPatient({handleClose}) {
 
     useEffect(() => {
         getApiData("api/location/countries")
-            .then(res => setCountries(res))
+            .then(res =>{const data=res.find(item=>item?.name=="India")
+                setForm({...form,countryId:data?._id})
+                fetchStates(data?.isoCode)
+                 setCountries(res)})
             .catch(err => console.error(err));
         
     }, []);
@@ -133,8 +136,8 @@ function AddPatient({handleClose}) {
         if (form.email && !/^\S+@\S+\.\S+$/.test(form.email))
             newErrors.email = "Invalid email address";
 
-        if (form.emergencyContactPhone && !/^\d{10}$/.test(form.emergencyContactPhone))
-            newErrors.emergencyContactPhone = "Emergency phone must be 10 digits";
+        // if (form.emergencyContactPhone && !/^\d{10}$/.test(form.emergencyContactPhone))
+        //     newErrors.emergencyContactPhone = "Emergency phone must be 10 digits";
 
        
 
@@ -204,6 +207,7 @@ function AddPatient({handleClose}) {
                                     <input
                                         type="date"
                                         name="dob"
+                                        max={new Date().toISOString().split("T")[0]}
                                         value={form.dob}
                                         onChange={handleChange}
                                         disabled={fetchById}
@@ -281,7 +285,7 @@ function AddPatient({handleClose}) {
                                         disabled={fetchById}
                                         className="form-control"
                                     />
-                                    {errors.emergencyContactName && <small className="text-danger">{errors.emergencyContactName}</small>}
+                                    {/* {errors.emergencyContactName && <small className="text-danger">{errors.emergencyContactName}</small>} */}
                                 </div>
                             </div>
 
@@ -297,7 +301,7 @@ function AddPatient({handleClose}) {
                                         disabled={fetchById}
                                         className="form-control"
                                     />
-                                    {errors.emergencyContactNumber && <small className="text-danger">{errors.emergencyContactNumber}</small>}
+                                    {/* {errors.emergencyContactNumber && <small className="text-danger">{errors.emergencyContactNumber}</small>} */}
                                 </div>
                             </div>                        
                             <div className="col-lg-12">

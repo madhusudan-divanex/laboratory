@@ -154,7 +154,7 @@ function Tests() {
                                                 allTest?.map((item, key) =>
                                                     <tr key={key}>
                                                         <td>{key + 1}</td>
-                                                        <td className="text-capitalize">{item?.department?.departmentName}</td>
+                                                        <td className="text-capitalize">{item?.category?.name}</td>
                                                         <td>{item?.shortName}</td>
                                                         <td>{item?.packageType}</td>
                                                         <td>${item?.price}</td>

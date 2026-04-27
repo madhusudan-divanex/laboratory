@@ -359,7 +359,7 @@ function NeoAi() {
                                             <div className="d-flex align-items-center justify-content-between">
                                                 <div className="chat-usr-avatr-crd">
                                                     <div className="chat-usr-avatr-bx nw-chat-add-live">
-                                                        <img src={"/logo.png"} alt="" />
+                                                        <img src={"/logo.png"} alt="" style={{objectFit:'contain'}}/>
                                                     </div>
                                                     <div className="chat-usr-info">
                                                         <h5 className="mb-0">Neo Ai Chat</h5>

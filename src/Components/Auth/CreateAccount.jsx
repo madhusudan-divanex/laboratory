@@ -64,7 +64,7 @@ function CreateAccount() {
         const payload = new FormData();
         for (let key in formData) {
             if (key == "category") {
-                payload.append(key, formData.category)
+                payload.append(key,JSON.stringify(formData.category))
             } else {
                 payload.append(key, formData[key]);
             }

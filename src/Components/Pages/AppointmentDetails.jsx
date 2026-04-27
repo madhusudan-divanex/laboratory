@@ -206,8 +206,6 @@ function AppointmentDetails() {
             Go Back
           </Link>
         </div>
-
-
       </div>}
 
       {/*Payment Status Popup Start  */}
@@ -232,7 +230,8 @@ function AppointmentDetails() {
                   <div className="custom-frm-bx">
                     <label htmlFor="">Status</label>
                     <select name="paymentStatus" value={payData.paymentStatus}
-                      onChange={(e) => setPayData({ ...payData, paymentStatus: e.target.value })} className="form-select nw-control-frm">
+                      onChange={(e) => setPayData({ ...payData, paymentStatus: e.target.value })} 
+                      className="form-select nw-control-frm">
                       <option value="due">Due</option>
                       <option value="paid">Paid</option>
                     </select>

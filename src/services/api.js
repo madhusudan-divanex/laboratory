@@ -37,8 +37,6 @@ export const updateApiData=async(endpoint,data)=>{
     return res.data
 }
 export const securePostData=async(endpoint,data)=>{
-
-
     const res=await axios.post(`${base_url}/${endpoint}`,data,{
         headers:{
             'Token': `${localStorage.getItem("token")}`

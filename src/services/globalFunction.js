@@ -12,5 +12,20 @@ const calculateAge = (dob) => {
         }
         return age;
     };
+const saveFcmToken = async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") return;
+      const token = await getToken(messaging, {
+        vapidKey: "BE3q7ncn4UgC6EPT2Ehc8ozFDuu7tjRPV35MgbwCRV_QizDXeAH7nGtVxcStGmloWt0HQ9NfGIToPZ9EalL4Qe0"
+      });
 
-export {calculateAge}
+      if (token) {
+        await securePostData("api/comman/save-fcm-token", { fcmToken: token });
+        console.log("✅ FCM Token Saved");
+      }
+    } catch (err) {
+      console.error("FCM error", err);
+    }
+  };
+export {calculateAge,saveFcmToken}

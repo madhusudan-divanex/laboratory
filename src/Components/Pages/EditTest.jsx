@@ -8,7 +8,7 @@ import React, { useEffect, useState } from "react";
 import { FaTrash } from "react-icons/fa6";
 import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getSecureApiData, securePostData, updateApiData } from "../../services/api";
+import { getApiData, getSecureApiData, securePostData, updateApiData } from "../../services/api";
 import Loader from "../Layouts/Loader";
 
 function EditTest() {
@@ -18,14 +18,16 @@ function EditTest() {
   const userId = localStorage.getItem('userId')
   const [loading, setLoading] = useState(false)
   const [selectedOption, setSelectedOption] = useState("select");
-  const [deptOption,setDeptOption]=useState([])
+  const [deptOption, setDeptOption] = useState([])
+  const [catData, setCatData] = useState([])
   const handleRadioChange = (event) => {
     setSelectedOption(event.target.value);
   };
   const [testData, setTestData] = useState({
     labId: userId,
     name: "",
-    department: "",
+    category: null,
+    subCategory: null,
     code: "",
     packageType: "",
     testProcessing: "",
@@ -94,6 +96,7 @@ function EditTest() {
     setTestData((prev) => ({
       ...prev,
       [name]: value,
+      ...(name === "category" && { subCategory: "" }) // reset subCategory
     }));
   };
 
@@ -150,7 +153,9 @@ function EditTest() {
       const response = await getSecureApiData(`lab/test-data/${testId}`)
       if (response.success) {
 
-        setTestData({ ...testData, ...response.data, specialApproval: response?.data?.specialApproval ,department: response?.data?.department?._id})
+        setTestData({ ...testData, ...response.data, specialApproval: response?.data?.specialApproval, category: response?.data?.category?._id ,
+          subCategory: response?.data?.subCategory?._id
+        })
         const data = response.data.component
         setComponents(data)
         const sdata = response.data.sample
@@ -244,8 +249,11 @@ function EditTest() {
       errors.name = "Test name is required";
     }
 
-    if (!testData.department) {
-      errors.department = "Category is required";
+    if (!testData.category) {
+      errors.category = "Category is required";
+    }
+    if (!testData.subCategory) {
+      errors.subCategory = "Sub Category is required";
     }
 
     if (!testData.code?.trim()) {
@@ -278,7 +286,7 @@ function EditTest() {
       errors.price = "Enter valid price";
     }
 
-    
+
 
     setTestErrors(errors);
 
@@ -340,23 +348,24 @@ function EditTest() {
       errors: newErrors
     };
   };
-  const fetchDepartments = async () => {
-      try {
-        setLoading(true);
-        const res = await getSecureApiData(`api/department/list?limit=100&type=LAB`);
-        if (res.success) {
-          setDeptOption(res.data);
-        }
-  
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+  useEffect(() => {
+    fetchTestCategory()
+  }, [])
+  async function fetchTestCategory() {
+    try {
+      const res = await getApiData('api/comman/test-category')
+      if (res.success) {
+        setCatData(res.data)
+      } else {
+        toast.error(res.message)
       }
-    };
-    useEffect(() => {
-      fetchDepartments()
-    }, [])
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+  const selectedCategory = catData?.find(
+    item => item?._id === testData?.category
+  );
   return (
     <>
       {loading ? <Loader />
@@ -414,14 +423,25 @@ function EditTest() {
                   <div className="row">
                     <div className="col-lg-3 col-md-6 col-sm-12">
                       <div className="custom-frm-bx">
-                        <label htmlFor="">Select Department</label>
-                        <select name="department" value={testData.department} onChange={handleChange} id="" className="form-select nw-control-frm">
+                        <label htmlFor="">Select category</label>
+                        <select name="category" value={testData.category} onChange={handleChange} id="" className="form-select nw-control-frm">
                           <option value="">---Select---</option>
-                          {deptOption?.map((item,key)=>
-                        <option value={item?._id}>{item?.departmentName}</option>)}
+                          {catData?.map((item, key) =>
+                            <option value={item?._id}>{item?.name}</option>)}
                         </select>
                       </div>
-                      {testErrors?.department && <span className="text-danger">{testErrors?.department}</span>}
+                      {testErrors?.category && <span className="text-danger">{testErrors?.category}</span>}
+                    </div>
+                    <div className="col-lg-3 col-md-6 col-sm-12">
+                      <div className="custom-frm-bx">
+                        <label htmlFor="">Select Sub Category</label>
+                        <select name="subCategory" value={testData.subCategory} onChange={handleChange} id="" className="form-select nw-control-frm">
+                          <option value="">---Select---</option>
+                          {selectedCategory?.subCat?.map((item, key) =>
+                            <option value={item?._id} key={item?._id}>{item?.name}</option>)}
+                        </select>
+                      </div>
+                      {testErrors?.subCategory && <span className="text-danger">{testErrors?.subCategory}</span>}
                     </div>
 
                     <div className="col-lg-3 col-md-6 col-sm-12">

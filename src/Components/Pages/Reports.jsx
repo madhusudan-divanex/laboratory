@@ -8,7 +8,7 @@ import React, { useEffect, useState } from "react";
 import { FaTrash } from "react-icons/fa6";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getSecureApiData, securePostData } from "../../services/api";
+import { getApiData, getSecureApiData, securePostData } from "../../services/api";
 import { useSelector } from "react-redux";
 import Loader from "../Layouts/Loader";
 
@@ -17,14 +17,18 @@ function Reports() {
   const { isOwner, permissions } = useSelector(state => state.user)
   const userId = localStorage.getItem('userId')
   const [selectedOption, setSelectedOption] = useState("select");
-  const [loading,setLoading]=useState(false)
+  const [loading, setLoading] = useState(false)
+  const [catAndSub, setCatAndSub] = useState()
+  const [catData, setCatData] = useState([])
+  const [subCatData, setSubCatData] = useState()
   const handleRadioChange = (event) => {
     setSelectedOption(event.target.value);
   };
   const [testData, setTestData] = useState({
     labId: userId,
     name: "",
-    department: "",
+    category: null,
+    subCategory: null,
     code: "",
     packageType: "",
     testProcessing: "",
@@ -127,8 +131,11 @@ function Reports() {
       errors.name = "Test name is required";
     }
 
-    if (!testData.department) {
-      errors.department = "Category is required";
+    if (!testData.category) {
+      errors.category = "Category is required";
+    }
+    if (!testData.subCategory) {
+      errors.subCategory = "Sub Category is required";
     }
 
     if (!testData.code?.trim()) {
@@ -212,6 +219,7 @@ function Reports() {
     setTestData((prev) => ({
       ...prev,
       [name]: value,
+      ...(name === "category" && { subCategory: "" }) // reset subCategory
     }));
   };
 
@@ -317,56 +325,57 @@ function Reports() {
       errors: newErrors
     };
   };
- const fetchDepartments = async () => {
-      try {
-        setLoading(true);
-        const res = await getSecureApiData(`api/department/list?limit=100&type=LAB`);
-        if (res.success) {
-          setDeptOption(res.data);
-        }
-  
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+  useEffect(() => {
+    fetchTestCategory()
+  }, [])
+  async function fetchTestCategory() {
+    try {
+      const res = await getApiData('api/comman/test-category')
+      if (res.success) {
+        setCatData(res.data)
+      } else {
+        toast.error(res.message)
       }
-    };
-    useEffect(() => {
-      fetchDepartments()
-    }, [])
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+  const selectedCategory = catData?.find(
+    item => item?._id === testData?.category
+  );
   return (
     <>
-      {loading?<Loader/>
-      :<div className="main-content flex-grow-1 p-3 overflow-auto">
-        <div className="row mb-3">
-          <div className="d-flex align-items-center justify-content-between tp-sub-main-bx">
-            <div>
-              <h3 className="innr-title">Add Test</h3>
-              <div className="admin-breadcrumb">
-                <nav aria-label="breadcrumb">
-                  <ol className="breadcrumb custom-breadcrumb">
-                    <li className="breadcrumb-item">
-                      <NavLink to="/dashboard" className="breadcrumb-link">
-                        Dashboard
-                      </NavLink>
-                    </li>
+      {loading ? <Loader />
+        : <div className="main-content flex-grow-1 p-3 overflow-auto">
+          <div className="row mb-3">
+            <div className="d-flex align-items-center justify-content-between tp-sub-main-bx">
+              <div>
+                <h3 className="innr-title">Add Test</h3>
+                <div className="admin-breadcrumb">
+                  <nav aria-label="breadcrumb">
+                    <ol className="breadcrumb custom-breadcrumb">
+                      <li className="breadcrumb-item">
+                        <NavLink to="/dashboard" className="breadcrumb-link">
+                          Dashboard
+                        </NavLink>
+                      </li>
 
-                    <li className="breadcrumb-item">
-                      <a href="#" className="breadcrumb-link">
-                        Test Categories
-                      </a>
-                    </li>
-                    <li
-                      className="breadcrumb-item active"
-                      aria-current="page"
-                    >
-                      Add Test
-                    </li>
-                  </ol>
-                </nav>
+                      <li className="breadcrumb-item">
+                        <a href="#" className="breadcrumb-link">
+                          Test Categories
+                        </a>
+                      </li>
+                      <li
+                        className="breadcrumb-item active"
+                        aria-current="page"
+                      >
+                        Add Test
+                      </li>
+                    </ol>
+                  </nav>
+                </div>
               </div>
-            </div>
-            {/* <div className="add-nw-bx d-flex gap-2">
+              {/* <div className="add-nw-bx d-flex gap-2">
               <a href="javascript:void(0)" className="add-nw-btn nw-thm-btn patient-thm-btn">
                 <FontAwesomeIcon icon={faEye} /> Patient Details
               </a>
@@ -375,433 +384,444 @@ function Reports() {
                 <FaPlusCircle /> Print
               </a>
             </div> */}
+            </div>
           </div>
-        </div>
 
-        <div className="lab-chart-crd">
-          <div className="row">
-            <div className="col-lg-12">
-              <div className="lab-tp-title patient-bio-tab report-profile-tp">
-                <div>
-                  <h6 className="mb-0 text-white">Test</h6>
-                </div>
-              </div>
-
-              <form onSubmit={testSubmit} className="patient-bio-tab">
-                <div className="row">
-                  <div className="col-lg-3 col-md-6 col-sm-12">
-                    <div className="custom-frm-bx">
-                      <label htmlFor="">Select Department</label>
-                      <select name="department" value={testData.department} onChange={handleChange} id="" className="form-select nw-control-frm">
-                        <option value="">---Select---</option>
-                        {deptOption?.map((item,key)=>
-                        <option value={item?._id}>{item?.departmentName}</option>)}
-                      </select>
-                    </div>
-                    {testErrors?.department && <span className="text-danger">{testErrors?.department}</span>}
+          <div className="lab-chart-crd">
+            <div className="row">
+              <div className="col-lg-12">
+                <div className="lab-tp-title patient-bio-tab report-profile-tp">
+                  <div>
+                    <h6 className="mb-0 text-white">Test</h6>
                   </div>
-
-                  <div className="col-lg-3 col-md-6 col-sm-12">
-                    <div className="custom-frm-bx">
-                      <label htmlFor="">Name</label>
-                      <input type="text" className="form-control nw-control-frm" name="shortName" value={testData.shortName} onChange={handleChange} />
-                      {testErrors?.name && <span className="text-danger">{testErrors?.name}</span>}
-                    </div>
-                  </div>
-                  <div className="col-lg-3 col-md-6 col-sm-12">
-                    <div className="custom-frm-bx">
-                      <label htmlFor="">Code</label>
-                      <input type="text" className="form-control nw-control-frm" name="code" value={testData.code} onChange={handleChange} />
-                      {testErrors?.code && <span className="text-danger">{testErrors?.code}</span>}
-                    </div>
-                  </div>
-
-                  <div className="col-lg-3 col-md-6 col-sm-12">
-                    <div className="custom-frm-bx">
-                      <label htmlFor="">Package Type</label>
-                      <select name="packageType" value={testData.packageType} onChange={handleChange} id="" className="form-select nw-control-frm">
-                        <option value="">---Select Categories---</option>
-                        <option value="single">Single</option>
-                        <option value="profile">Profile</option>
-                        <option value="package">Package</option>
-                      </select>
-                      {testErrors?.packageType && <span className="text-danger">{testErrors?.packageType}</span>}
-                    </div>
-                  </div>
-                  <div className="col-lg-3 col-md-6 col-sm-12">
-                    <div className="custom-frm-bx">
-                      <label htmlFor="">Test Type</label>
-                      <select name="testType" value={testData.testType} onChange={handleChange} id="" className="form-select nw-control-frm">
-                        <option value="">---Select---</option>
-                        <option value="Single">Routine</option>
-                        <option value="Profile">Urgent</option>
-                      </select>
-                      {testErrors?.testType && <span className="text-danger">{testErrors?.testType}</span>}
-                    </div>
-                  </div>
-                  <div className="col-lg-3 col-md-6 col-sm-12">
-                    <div className="custom-frm-bx">
-                      <label htmlFor="">Fasting Requried</label>
-                      <select name="fastingRequired" value={testData.fastingRequired} onChange={handleChange} id="" className="form-select nw-control-frm">
-                        <option value="">---Select---</option>
-                        <option value={true}>Yes</option>
-                        <option value={false}>No</option>
-                      </select>
-                      {testErrors?.fastingRequired && <span className="text-danger">{testErrors?.fastingRequired}</span>}
-                    </div>
-                  </div>
-                  <div className="col-lg-3 col-md-6 col-sm-12">
-                    <div className="custom-frm-bx">
-                      <label htmlFor="">Special Approval Required</label>
-                      <select name="specialApproval" value={testData.specialApproval} onChange={handleChange} id="" className="form-select nw-control-frm">
-                        <option value="">---Select---</option>
-                        <option value={true}>Yes</option>
-                        <option value={false}>No</option>
-                      </select>
-                      {testErrors?.specialApproval && <span className="text-danger">{testErrors?.specialApproval}</span>}
-                    </div>
-                  </div>
-                  <div className="col-lg-3 col-md-6 col-sm-12">
-                    <div className="custom-frm-bx">
-                      <label htmlFor="">Test Processing</label>
-                      <select name="testProcessing" value={testData.testProcessing} onChange={handleChange} id="" className="form-select nw-control-frm">
-                        <option value="">---Select---</option>
-                        <option value={"Machine"}>Machine</option>
-                        <option value={"Manual"}>Manual</option>
-                        <option value={"Batch"}>Batch</option>
-                      </select>
-                      {testErrors?.testProcessing && <span className="text-danger">{testErrors?.testProcessing}</span>}
-                    </div>
-                  </div>
-
-
-                  <div className="col-lg-3 col-md-6 col-sm-12">
-                    <div className="custom-frm-bx">
-                      <label htmlFor="">Price</label>
-                      <input type="text" className="form-control nw-control-frm" name="price" value={testData.price} onChange={handleChange} />
-
-                      <div className="reprt-price-bx">
-                        <a href="javascript:void(0)" className="reprt-price-btn">$</a>
-                      </div>
-                    </div>
-                    {testErrors?.price && <span className="text-danger my-5">{testErrors?.price}</span>}
-                  </div>
-
-
                 </div>
 
-                <div className="lab-chart-crd reporting-crd-bx mb-5">
+                <form onSubmit={testSubmit} className="patient-bio-tab">
                   <div className="row">
-                    <div className="col-lg-12">
-                      <div className="lab-tp-title patient-bio-tab report-bio-tp d-flex align-items-center justify-content-between py-3 sub-header-bx gap-2">
-                        <div>
-                          <h6 className="mb-0 text-black">Sample Collection</h6>
-                        </div>
-
-                        <div className="add-nw-bx d-flex gap-2">
-
-                          <button type="button" onClick={addSample} className="add-nw-btn thm-btn">
-                            <img src="/plus-icon.png" alt="" /> Sample
-                          </button>
-
-                        </div>
-
+                    <div className="col-lg-3 col-md-6 col-sm-12">
+                      <div className="custom-frm-bx">
+                        <label htmlFor="">Select Category</label>
+                        <select name="category" value={testData.category} onChange={handleChange} id="" className="form-select nw-control-frm">
+                          <option value="">---Select---</option>
+                          {catData?.map((item, key) =>
+                            <option value={item?._id} key={item?._id}>{item?.name}</option>)}
+                        </select>
                       </div>
+                      {testErrors?.category && <span className="text-danger">{testErrors?.category}</span>}
+                    </div>
+                    <div className="col-lg-3 col-md-6 col-sm-12">
+                      <div className="custom-frm-bx">
+                        <label htmlFor="">Select Sub Category</label>
+                        <select name="subCategory" value={testData.subCategory} onChange={handleChange} id="" className="form-select nw-control-frm">
+                          <option value="">---Select---</option>
+                          {selectedCategory?.subCat?.map((item, key) =>
+                            <option value={item?._id} key={item?._id}>{item?.name}</option>)}
+                        </select>
+                      </div>
+                      {testErrors?.subCategory && <span className="text-danger">{testErrors?.subCategory}</span>}
+                    </div>
 
-                      <div className="patient-bio-tab">
-                        <div className="table-section mega-table-section reporting-table-section">
-                          <div className="table table-responsive mb-0">
-                            <table className="table mb-0">
-                              <thead>
-                                <tr>
-                                  <th>Type</th>
-                                  <th>Sample Amount</th>
-                                  <th>Action</th>
+                    <div className="col-lg-3 col-md-6 col-sm-12">
+                      <div className="custom-frm-bx">
+                        <label htmlFor="">Name</label>
+                        <input type="text" className="form-control nw-control-frm" name="shortName" value={testData.shortName} onChange={handleChange} />
+                        {testErrors?.name && <span className="text-danger">{testErrors?.name}</span>}
+                      </div>
+                    </div>
+                    <div className="col-lg-3 col-md-6 col-sm-12">
+                      <div className="custom-frm-bx">
+                        <label htmlFor="">Code</label>
+                        <input type="text" className="form-control nw-control-frm" name="code" value={testData.code} onChange={handleChange} />
+                        {testErrors?.code && <span className="text-danger">{testErrors?.code}</span>}
+                      </div>
+                    </div>
 
-                                </tr>
-                              </thead>
-                              <tbody>
+                    <div className="col-lg-3 col-md-6 col-sm-12">
+                      <div className="custom-frm-bx">
+                        <label htmlFor="">Package Type</label>
+                        <select name="packageType" value={testData.packageType} onChange={handleChange} id="" className="form-select nw-control-frm">
+                          <option value="">---Select Categories---</option>
+                          <option value="single">Single</option>
+                          <option value="profile">Profile</option>
+                          <option value="package">Package</option>
+                        </select>
+                        {testErrors?.packageType && <span className="text-danger">{testErrors?.packageType}</span>}
+                      </div>
+                    </div>
+                    <div className="col-lg-3 col-md-6 col-sm-12">
+                      <div className="custom-frm-bx">
+                        <label htmlFor="">Test Type</label>
+                        <select name="testType" value={testData.testType} onChange={handleChange} id="" className="form-select nw-control-frm">
+                          <option value="">---Select---</option>
+                          <option value="Single">Routine</option>
+                          <option value="Profile">Urgent</option>
+                        </select>
+                        {testErrors?.testType && <span className="text-danger">{testErrors?.testType}</span>}
+                      </div>
+                    </div>
+                    <div className="col-lg-3 col-md-6 col-sm-12">
+                      <div className="custom-frm-bx">
+                        <label htmlFor="">Fasting Requried</label>
+                        <select name="fastingRequired" value={testData.fastingRequired} onChange={handleChange} id="" className="form-select nw-control-frm">
+                          <option value="">---Select---</option>
+                          <option value={true}>Yes</option>
+                          <option value={false}>No</option>
+                        </select>
+                        {testErrors?.fastingRequired && <span className="text-danger">{testErrors?.fastingRequired}</span>}
+                      </div>
+                    </div>
+                    <div className="col-lg-3 col-md-6 col-sm-12">
+                      <div className="custom-frm-bx">
+                        <label htmlFor="">Special Approval Required</label>
+                        <select name="specialApproval" value={testData.specialApproval} onChange={handleChange} id="" className="form-select nw-control-frm">
+                          <option value="">---Select---</option>
+                          <option value={true}>Yes</option>
+                          <option value={false}>No</option>
+                        </select>
+                        {testErrors?.specialApproval && <span className="text-danger">{testErrors?.specialApproval}</span>}
+                      </div>
+                    </div>
+                    <div className="col-lg-3 col-md-6 col-sm-12">
+                      <div className="custom-frm-bx">
+                        <label htmlFor="">Test Processing</label>
+                        <select name="testProcessing" value={testData.testProcessing} onChange={handleChange} id="" className="form-select nw-control-frm">
+                          <option value="">---Select---</option>
+                          <option value={"Machine"}>Machine</option>
+                          <option value={"Manual"}>Manual</option>
+                          <option value={"Batch"}>Batch</option>
+                        </select>
+                        {testErrors?.testProcessing && <span className="text-danger">{testErrors?.testProcessing}</span>}
+                      </div>
+                    </div>
 
-                                {sampleData.map((s, index) => (
-                                  <React.Fragment key={index}>
-                                    <tr >
-                                      <td className="h-auto w-auto">
-                                        <div className="custom-frm-bx">
-                                          <input
-                                            type="text"
-                                            name="type"
-                                            className="form-control"
-                                            placeholder="Blood"
-                                            value={s.type}
-                                            onChange={(e) => handleSampleChange(index, e)}
-                                          />
-                                          {sampleErrors[index]?.type && (
-                                            <span className="text-danger">{sampleErrors[index].type}</span>
-                                          )}
-                                        </div>
 
-                                      </td>
-                                      <td className="h-auto w-auto">
-                                        <div className="custom-frm-bx">
-                                          <input
-                                            type="text"
-                                            name="volume"
-                                            className="form-control"
-                                            placeholder="0.5mm/dl"
-                                            value={s.volume}
-                                            onChange={(e) => handleSampleChange(index, e)}
-                                          />
-                                          {sampleErrors[index]?.volume && (
-                                            <span className="text-danger">{sampleErrors[index].volume}</span>
-                                          )}
-                                        </div>
+                    <div className="col-lg-3 col-md-6 col-sm-12">
+                      <div className="custom-frm-bx">
+                        <label htmlFor="">Price</label>
+                        <input type="text" className="form-control nw-control-frm" name="price" value={testData.price} onChange={handleChange} />
 
-                                      </td>
-                                      <td className="h-auto w-auto">
-                                        <button
-                                          type="button"
-                                          disabled={sampleData?.length == 1}
-                                          className="text-black"
-                                          onClick={() => removeSample(index)}
-                                        >
-                                          <FontAwesomeIcon icon={faTrash} />
-                                        </button>
-                                      </td>
-                                    </tr>
-                                  </React.Fragment>
-                                ))}
+                        <div className="reprt-price-bx">
+                          <a href="javascript:void(0)" className="reprt-price-btn">$</a>
+                        </div>
+                      </div>
+                      {testErrors?.price && <span className="text-danger my-5">{testErrors?.price}</span>}
+                    </div>
 
-                              </tbody>
-                            </table>
+
+                  </div>
+
+                  <div className="lab-chart-crd reporting-crd-bx mb-5">
+                    <div className="row">
+                      <div className="col-lg-12">
+                        <div className="lab-tp-title patient-bio-tab report-bio-tp d-flex align-items-center justify-content-between py-3 sub-header-bx gap-2">
+                          <div>
+                            <h6 className="mb-0 text-black">Sample Collection</h6>
+                          </div>
+
+                          <div className="add-nw-bx d-flex gap-2">
+
+                            <button type="button" onClick={addSample} className="add-nw-btn thm-btn">
+                              <img src="/plus-icon.png" alt="" /> Sample
+                            </button>
 
                           </div>
 
                         </div>
+
+                        <div className="patient-bio-tab">
+                          <div className="table-section mega-table-section reporting-table-section">
+                            <div className="table table-responsive mb-0">
+                              <table className="table mb-0">
+                                <thead>
+                                  <tr>
+                                    <th>Type</th>
+                                    <th>Sample Amount</th>
+                                    <th>Action</th>
+
+                                  </tr>
+                                </thead>
+                                <tbody>
+
+                                  {sampleData.map((s, index) => (
+                                    <React.Fragment key={index}>
+                                      <tr >
+                                        <td className="h-auto w-auto">
+                                          <div className="custom-frm-bx">
+                                            <input
+                                              type="text"
+                                              name="type"
+                                              className="form-control"
+                                              placeholder="Blood"
+                                              value={s.type}
+                                              onChange={(e) => handleSampleChange(index, e)}
+                                            />
+                                            {sampleErrors[index]?.type && (
+                                              <span className="text-danger">{sampleErrors[index].type}</span>
+                                            )}
+                                          </div>
+
+                                        </td>
+                                        <td className="h-auto w-auto">
+                                          <div className="custom-frm-bx">
+                                            <input
+                                              type="text"
+                                              name="volume"
+                                              className="form-control"
+                                              placeholder="0.5mm/dl"
+                                              value={s.volume}
+                                              onChange={(e) => handleSampleChange(index, e)}
+                                            />
+                                            {sampleErrors[index]?.volume && (
+                                              <span className="text-danger">{sampleErrors[index].volume}</span>
+                                            )}
+                                          </div>
+
+                                        </td>
+                                        <td className="h-auto w-auto">
+                                          <button
+                                            type="button"
+                                            disabled={sampleData?.length == 1}
+                                            className="text-black"
+                                            onClick={() => removeSample(index)}
+                                          >
+                                            <FontAwesomeIcon icon={faTrash} />
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    </React.Fragment>
+                                  ))}
+
+                                </tbody>
+                              </table>
+
+                            </div>
+
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="lab-chart-crd reporting-crd-bx">
-                  <div className="row">
-                    <div className="col-lg-12">
-                      <div className="lab-tp-title patient-bio-tab report-bio-tp d-flex align-items-center justify-content-between py-3 sub-header-bx gap-2">
-                        <div>
-                          <h6 className="mb-0 text-black">Test Components</h6>
-                        </div>
+                  <div className="lab-chart-crd reporting-crd-bx">
+                    <div className="row">
+                      <div className="col-lg-12">
+                        <div className="lab-tp-title patient-bio-tab report-bio-tp d-flex align-items-center justify-content-between py-3 sub-header-bx gap-2">
+                          <div>
+                            <h6 className="mb-0 text-black">Test Components</h6>
+                          </div>
 
-                        <div className="add-nw-bx d-flex gap-2">
-                          {/* <button type="button" onClick={addTitle} className="add-nw-btn thm-btn">
+                          <div className="add-nw-bx d-flex gap-2">
+                            {/* <button type="button" onClick={addTitle} className="add-nw-btn thm-btn">
                             <img src="/plus-icon.png" alt="" /> Title
                           </button> */}
 
-                          <button type="button" onClick={addComponent} className="add-nw-btn thm-btn">
-                            <img src="/plus-icon.png" alt="" /> Component
-                          </button>
+                            <button type="button" onClick={addComponent} className="add-nw-btn thm-btn">
+                              <img src="/plus-icon.png" alt="" /> Component
+                            </button>
+
+                          </div>
 
                         </div>
 
-                      </div>
+                        <div className="patient-bio-tab">
+                          <div className="table-section mega-table-section reporting-table-section">
+                            <div className="table table-responsive mb-0">
+                              <table className="table mb-0">
+                                <thead>
+                                  <tr>
+                                    <th>Name</th>
+                                    <th>Unit</th>
+                                    <th>Result</th>
+                                    <th>Reference Range</th>
+                                    {/* <th>Status</th> */}
+                                    <th>Action</th>
 
-                      <div className="patient-bio-tab">
-                        <div className="table-section mega-table-section reporting-table-section">
-                          <div className="table table-responsive mb-0">
-                            <table className="table mb-0">
-                              <thead>
-                                <tr>
-                                  <th>Name</th>
-                                  <th>Unit</th>
-                                  <th>Result</th>
-                                  <th>Reference Range</th>
-                                  {/* <th>Status</th> */}
-                                  <th>Action</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
 
-                                </tr>
-                              </thead>
-                              <tbody>
-
-                                {components.map((component, index) => (
-                                  <React.Fragment key={index}>
-                                    <tr>
-                                      <td>
-                                        <div className="custom-frm-bx">
-                                          <input
-                                            type="text"
-                                            name="name"
-                                            className="form-control"
-                                            placeholder="Lymphocyte"
-                                            value={component.name}
-                                            onChange={(e) => handleComponentChange(index, e)}
-                                          />
-                                          {componentErrors[index]?.name && (
-                                            <span className="text-danger">
-                                              {componentErrors[index].name}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </td>
-
-                                      <td>
-                                        <div className="custom-frm-bx">
-                                          <input
-                                            type="text"
-                                            name="unit"
-                                            className="form-control"
-                                            placeholder="mm/dl"
-                                            value={component.unit}
-                                            onChange={(e) => handleComponentChange(index, e)}
-                                          />
-                                          {componentErrors[index]?.unit && (
-                                            <span className="text-danger">
-                                              {componentErrors[index].unit}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </td>
-
-                                      <td>
-                                        <div className="custom-radio-group">
-
-                                          {/* RADIO */}
-                                          <div className="form-check form-check-inline">
+                                  {components.map((component, index) => (
+                                    <React.Fragment key={index}>
+                                      <tr>
+                                        <td>
+                                          <div className="custom-frm-bx">
                                             <input
-                                              className="form-check-input"
-                                              type="radio"
-                                              name="optionType"
-                                              value="text"
-                                              checked={component.optionType == "text"}
+                                              type="text"
+                                              name="name"
+                                              className="form-control"
+                                              placeholder="Lymphocyte"
+                                              value={component.name}
                                               onChange={(e) => handleComponentChange(index, e)}
                                             />
-                                            <label className="form-check-label">Text</label>
+                                            {componentErrors[index]?.name && (
+                                              <span className="text-danger">
+                                                {componentErrors[index].name}
+                                              </span>
+                                            )}
                                           </div>
+                                        </td>
 
-                                          <div className="form-check form-check-inline mb-2">
+                                        <td>
+                                          <div className="custom-frm-bx">
                                             <input
-                                              className="form-check-input"
-                                              type="radio"
-                                              name="optionType"
-                                              value="select"
-                                              checked={component.optionType == "select"}
+                                              type="text"
+                                              name="unit"
+                                              className="form-control"
+                                              placeholder="mm/dl"
+                                              value={component.unit}
                                               onChange={(e) => handleComponentChange(index, e)}
                                             />
-                                            <label className="form-check-label">Select</label>
+                                            {componentErrors[index]?.unit && (
+                                              <span className="text-danger">
+                                                {componentErrors[index].unit}
+                                              </span>
+                                            )}
                                           </div>
+                                        </td>
 
-                                          {componentErrors[index]?.optionType && (
-                                            <sapn className="text-danger d-block">
-                                              {componentErrors[index].optionType}
-                                            </sapn>
-                                          )}
+                                        <td>
+                                          <div className="custom-radio-group">
 
-                                          {/* SELECT TYPE */}
-                                          {component.optionType === "select" ? (
-                                            <div className="report-droping-bx mt-0">
-
-                                              <div className="d-flex justify-content-between align-items-center mb-2">
-                                                <h5 className="optin-title">Options</h5>
-                                                <button
-                                                  type="button"
-                                                  className="option-rep-add-btn"
-                                                  onClick={() => handleAddOption(index)}
-                                                >
-                                                  <FaPlusCircle />
-                                                </button>
-                                              </div>
-
-                                              {component.result.map((opt, optIndex) => (
-                                                <div key={optIndex} className="mb-2">
-
-                                                  <div className="d-flex align-items-center gap-2">
-
-                                                    {/* VALUE */}
-                                                    <div className="custom-frm-bx mb-0 flex-grow-1">
-                                                      <input
-                                                        type="text"
-                                                        className="form-control"
-                                                        placeholder="Option"
-                                                        value={opt.value}
-                                                        onChange={(e) =>
-                                                          handleOptionChange(index, optIndex, "value", e.target.value)
-                                                        }
-                                                      />
-                                                      {componentErrors[index]?.optionErrors?.[optIndex]?.value && (
-                                                        <span className="text-danger">
-                                                          {componentErrors[index].optionErrors[optIndex].value}
-                                                        </span>
-                                                      )}
-                                                    </div>
-
-                                                    {/* NOTE */}
-                                                    <div className="custom-frm-bx mb-0 flex-grow-1">
-                                                      <input
-                                                        type="text"
-                                                        className="form-control"
-                                                        placeholder="Note"
-                                                        value={opt.note}
-                                                        onChange={(e) =>
-                                                          handleOptionChange(index, optIndex, "note", e.target.value)
-                                                        }
-                                                      />
-                                                    </div>
-
-                                                    {/* REMOVE */}
-                                                    <button
-                                                      type="button"
-                                                      className="text-black"
-                                                      onClick={() => handleRemoveOption(index, optIndex)}
-                                                    >
-                                                      <FaTrash />
-                                                    </button>
-
-                                                  </div>
-                                                </div>
-                                              ))}
-
-                                              {componentErrors[index]?.result && (
-                                                <span className="text-danger">
-                                                  {componentErrors[index].result}
-                                                </span>
-                                              )}
-
-                                            </div>
-                                          ) : (
-                                            <div className="custom-frm-bx mb-0 flex-grow-1">
-                                              <textarea
-                                                rows={5}
-                                                name="textResult"
-                                                value={component.textResult}
+                                            {/* RADIO */}
+                                            <div className="form-check form-check-inline">
+                                              <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                name="optionType"
+                                                value="text"
+                                                checked={component.optionType == "text"}
                                                 onChange={(e) => handleComponentChange(index, e)}
-                                                className="form-control"
                                               />
-                                              {componentErrors[index]?.textResult && (
-                                                <span className="text-danger">
-                                                  {componentErrors[index].textResult}
-                                                </span>
-                                              )}
+                                              <label className="form-check-label">Text</label>
                                             </div>
-                                          )}
 
-                                        </div>
-                                      </td>
+                                            <div className="form-check form-check-inline mb-2">
+                                              <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                name="optionType"
+                                                value="select"
+                                                checked={component.optionType == "select"}
+                                                onChange={(e) => handleComponentChange(index, e)}
+                                              />
+                                              <label className="form-check-label">Select</label>
+                                            </div>
 
-                                      <td>
-                                        <div className="custom-frm-bx">
-                                          <textarea
-                                            name="referenceRange"
-                                            className="form-control"
-                                            style={{ resize: "auto", height: "100px" }}
-                                            value={component.referenceRange}
-                                            onChange={(e) => handleComponentChange(index, e)}
-                                            placeholder="20-100"
-                                          />
-                                          {componentErrors[index]?.referenceRange && (
-                                            <span className="text-danger">
-                                              {componentErrors[index].referenceRange}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </td>
+                                            {componentErrors[index]?.optionType && (
+                                              <sapn className="text-danger d-block">
+                                                {componentErrors[index].optionType}
+                                              </sapn>
+                                            )}
 
-                                      {/* <td>
+                                            {/* SELECT TYPE */}
+                                            {component.optionType === "select" ? (
+                                              <div className="report-droping-bx mt-0">
+
+                                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                                  <h5 className="optin-title">Options</h5>
+                                                  <button
+                                                    type="button"
+                                                    className="option-rep-add-btn"
+                                                    onClick={() => handleAddOption(index)}
+                                                  >
+                                                    <FaPlusCircle />
+                                                  </button>
+                                                </div>
+
+                                                {component.result.map((opt, optIndex) => (
+                                                  <div key={optIndex} className="mb-2">
+
+                                                    <div className="d-flex align-items-center gap-2">
+
+                                                      {/* VALUE */}
+                                                      <div className="custom-frm-bx mb-0 flex-grow-1">
+                                                        <input
+                                                          type="text"
+                                                          className="form-control"
+                                                          placeholder="Option"
+                                                          value={opt.value}
+                                                          onChange={(e) =>
+                                                            handleOptionChange(index, optIndex, "value", e.target.value)
+                                                          }
+                                                        />
+                                                        {componentErrors[index]?.optionErrors?.[optIndex]?.value && (
+                                                          <span className="text-danger">
+                                                            {componentErrors[index].optionErrors[optIndex].value}
+                                                          </span>
+                                                        )}
+                                                      </div>
+
+                                                      {/* NOTE */}
+                                                      <div className="custom-frm-bx mb-0 flex-grow-1">
+                                                        <input
+                                                          type="text"
+                                                          className="form-control"
+                                                          placeholder="Note"
+                                                          value={opt.note}
+                                                          onChange={(e) =>
+                                                            handleOptionChange(index, optIndex, "note", e.target.value)
+                                                          }
+                                                        />
+                                                      </div>
+
+                                                      {/* REMOVE */}
+                                                      <button
+                                                        type="button"
+                                                        className="text-black"
+                                                        onClick={() => handleRemoveOption(index, optIndex)}
+                                                      >
+                                                        <FaTrash />
+                                                      </button>
+
+                                                    </div>
+                                                  </div>
+                                                ))}
+
+                                                {componentErrors[index]?.result && (
+                                                  <span className="text-danger">
+                                                    {componentErrors[index].result}
+                                                  </span>
+                                                )}
+
+                                              </div>
+                                            ) : (
+                                              <div className="custom-frm-bx mb-0 flex-grow-1">
+                                                <textarea
+                                                  rows={5}
+                                                  name="textResult"
+                                                  value={component.textResult}
+                                                  onChange={(e) => handleComponentChange(index, e)}
+                                                  className="form-control"
+                                                />
+                                                {componentErrors[index]?.textResult && (
+                                                  <span className="text-danger">
+                                                    {componentErrors[index].textResult}
+                                                  </span>
+                                                )}
+                                              </div>
+                                            )}
+
+                                          </div>
+                                        </td>
+
+                                        <td>
+                                          <div className="custom-frm-bx">
+                                            <textarea
+                                              name="referenceRange"
+                                              className="form-control"
+                                              style={{ resize: "auto", height: "100px" }}
+                                              value={component.referenceRange}
+                                              onChange={(e) => handleComponentChange(index, e)}
+                                              placeholder="20-100"
+                                            />
+                                            {componentErrors[index]?.referenceRange && (
+                                              <span className="text-danger">
+                                                {componentErrors[index].referenceRange}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </td>
+
+                                        {/* <td>
                                         <div className="custom-frm-bx form-check custom-check pt-0">
                                           <input
                                             type="checkbox"
@@ -813,57 +833,57 @@ function Reports() {
                                         </div>
                                       </td> */}
 
-                                      <td>
-                                        <button
-                                          type="button"
-                                          disabled={components?.length === 1}
-                                          className="text-black"
-                                          onClick={() => removeComponent(index)}
-                                        >
-                                          <FontAwesomeIcon icon={faTrash} />
-                                        </button>
-                                      </td>
-                                    </tr>
+                                        <td>
+                                          <button
+                                            type="button"
+                                            disabled={components?.length === 1}
+                                            className="text-black"
+                                            onClick={() => removeComponent(index)}
+                                          >
+                                            <FontAwesomeIcon icon={faTrash} />
+                                          </button>
+                                        </td>
+                                      </tr>
 
-                                    <tr>
-                                      <td colSpan={6} className="h-auto">
-                                        <div className="custom-frm-bx mb-0">
-                                          <input
-                                            type="text"
-                                            name="title"
-                                            value={component.title}
-                                            onChange={(e) => handleComponentChange(index, e)}
-                                            className="form-control nw-control-frm"
-                                            placeholder="Blood details"
-                                          />
-                                        </div>
-                                      </td>
-                                    </tr>
+                                      <tr>
+                                        <td colSpan={6} className="h-auto">
+                                          <div className="custom-frm-bx mb-0">
+                                            <input
+                                              type="text"
+                                              name="title"
+                                              value={component.title}
+                                              onChange={(e) => handleComponentChange(index, e)}
+                                              className="form-control nw-control-frm"
+                                              placeholder="Blood details"
+                                            />
+                                          </div>
+                                        </td>
+                                      </tr>
 
-                                  </React.Fragment>
-                                ))}
+                                    </React.Fragment>
+                                  ))}
 
-                              </tbody>
-                            </table>
+                                </tbody>
+                              </table>
+
+                            </div>
 
                           </div>
-
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="d-flex justify-content-between mt-3">
-                  <Link to={-1} className="nw-thm-btn rounded-3 outline" >
-                    Go Back
-                  </Link>
-                  <button to="submit" className="nw-thm-btn sub-nw-brd-tbn">Save</button>
-                </div>
-              </form>
+                  <div className="d-flex justify-content-between mt-3">
+                    <Link to={-1} className="nw-thm-btn rounded-3 outline" >
+                      Go Back
+                    </Link>
+                    <button to="submit" className="nw-thm-btn sub-nw-brd-tbn">Save</button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
-      </div>}
+        </div>}
 
     </>
   )

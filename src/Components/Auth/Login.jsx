@@ -21,7 +21,7 @@ function Login() {
     contactNumber: "",
     email: "",
     panelId: "",
-    password: ""
+    password: "", withOtp: true
   });
   const [errors, setErrors] = useState({});
   const validate = () => {
@@ -63,17 +63,48 @@ function Login() {
       if (loginAsEmployee) {
         const response = await postApiData('api/staff/login', formData)
         if (response.success) {
-          localStorage.setItem('staffId', response.staffId)
-          localStorage.setItem('panelId', formData.panelId)
-          toast.success(`Login Success`)
-          navigate(`/otp?contact=${formData?.contactNumber || formData?.email}`)
+          if (formData?.withOtp) {
+            localStorage.setItem('staffId', response.staffId)
+            localStorage.setItem('panelId', formData.panelId)
+            toast.success(`Login Success`)
+            navigate(`/otp?contact=${formData?.contactNumber || formData?.email}`)
+          } else {
+            toast.success('Verify successfully');
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('userId', response.userId);
+            dispatch(fetchEmpDetail(response.staffId));
+            // await saveFcmToken();
+            navigate('/dashboard');
+            dispatch(fetchUserDetail());
+          }
         } else {
           toast.error(response.message)
         }
       } else {
         const response = await postApiData('lab/signin', data)
         if (response.success) {
-          navigate(`/otp?contact=${formData?.contactNumber || formData?.email}`)
+          if (formData?.withOtp) {
+            navigate(`/otp?contact=${formData?.contactNumber || formData?.email}`)
+          } else {
+            localStorage.setItem('token', response.token)
+            localStorage.setItem('userId', response.userId)
+            // localStorage.setItem('isOwner', response.isOwner);
+
+
+
+            toast.success('Login successfully')
+            if (response.nextStep) {
+              navigate(response.nextStep)
+              return
+            }
+            if (response.user.status == 'pending') {
+              navigate('/wating-for-approval')
+              return
+            } else {
+              navigate('/dashboard')
+              await saveFcmToken();
+            }
+          }
 
         } else {
           toast.error(response.message)
@@ -179,6 +210,11 @@ function Login() {
                         <div className='d-flex justify-content-between'>
                           <button type="button" onClick={() => setEmailLogin(!emailLogin)} className='lab-login-forgot-btn fs-6'>Login using {emailLogin ? 'mobile number' : 'email'}</button>
                           <NavLink to="/forgot-password" className='lab-login-forgot-btn fs-6'>Forgot Password</NavLink>
+                        </div>
+                        <div className="custom-radio-group my-3 d-flex flex-row">
+                          <label className="form-label me-3">Continue with Otp</label>
+                          <input type="checkbox" className="form-check-input" name="" checked={formData?.withOtp}
+                            onChange={(e) => setFormData({ ...formData, withOtp: e.target.checked })} id="" />
                         </div>
                         <div className='d-flex justify-content-between mt-4'>
                           <button className='lab-login-forgot-btn fs-6' type="button" onClick={() => setLoginAsEmployee(!loginAsEmployee)}>

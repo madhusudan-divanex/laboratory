@@ -22,6 +22,7 @@ function Departments() {
     const [totalPages, setTotalPages] = useState(1);
     const [search, setSearch] = useState("");
     const [type, setType] = useState("");
+    const [catData,setCatData]=useState()
     const navigate = useNavigate()
     const userId = localStorage.getItem('userId')
 
@@ -29,7 +30,7 @@ function Departments() {
     const [form, setForm] = useState({
         departmentName: "",
         type: "LAB",
-        headOfDepartment: "",
+        headOfDepartment: null,
         employees: [],
     });
 
@@ -76,7 +77,7 @@ function Departments() {
                 setForm({
                     departmentName: "",
                     type: "OPD",
-                    headOfDepartment: "",
+                    headOfDepartment: null,
                     employees: [],
                 });
             }
@@ -90,7 +91,7 @@ function Departments() {
 
         setForm({
             departmentName: dept.departmentName,
-            headOfDepartment: dept.headOfDepartment?._id || "",
+            headOfDepartment: dept.headOfDepartment?._id || null,
             employees: (dept.employees || [])?.map(emp => ({
                 employeeId:
                     typeof emp.employeeId === "object"
@@ -290,7 +291,19 @@ function Departments() {
                                     <form onSubmit={handleAddDepartment}>
 
                                         <div className="custom-frm-bx">
-                                            <label htmlFor="">Add Department</label>
+                                            <label htmlFor="">Select Category</label>
+                                            <select name="" id="">
+
+                                            </select>
+                                            <input type="text" className="form-control custom-select"
+                                                placeholder="Enter Department Name"
+                                                value={form.departmentName}
+                                                onChange={(e) =>
+                                                    setForm({ ...form, departmentName: e.target.value })
+                                                } />
+                                        </div>
+                                        <div className="custom-frm-bx">
+                                            <label htmlFor="">Sub Category</label>
                                             <input type="text" className="form-control custom-select"
                                                 placeholder="Enter Department Name"
                                                 value={form.departmentName}
@@ -304,7 +317,7 @@ function Departments() {
                                             <select
                                                 className="form-select custom-select"
                                                 value={form.headOfDepartment}
-                                                required
+                                                
                                                 onChange={(e) =>
                                                     setForm({ ...form, headOfDepartment: e.target.value })
                                                 }
@@ -473,7 +486,7 @@ function Departments() {
                                             <select
                                                 className="form-select custom-select"
                                                 value={form.headOfDepartment}
-                                                required
+                                                
                                                 onChange={(e) =>
                                                     setForm({ ...form, headOfDepartment: e.target.value })
                                                 }

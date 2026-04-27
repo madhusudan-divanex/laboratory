@@ -341,9 +341,9 @@ function Profile() {
                                 <div className="d-flex align-items-center justify-content-center gap-2 carding-bx">
                                   <div className="add-patients-clients" ref={cardRef}>
                                     <div className="chip-card"></div>
-                                    <img src="/lab-card.png" alt="" />
+                                    <img src="/LaboratoryNeoCard.png" alt="" />
                                     <div className="patient-card-details">
-                                      <h4>{labPerson?.name}</h4>
+                                      <h4>{user?.name?.length > 20 ? user?.name?.slice(0,17)+'...' : user?.name}</h4>
                                       <p>Laboratory ID</p>
                                       <h6>{user?.nh12}</h6>
                                     </div>
@@ -819,7 +819,7 @@ function Profile() {
 
                   <div className="custom-frm-bx">
                     <label htmlFor="">Note</label>
-                    <textarea name="" readOnly value={message} required onChange={(e) => setMessage(e.target.value)} id="" className="form-control"></textarea>
+                    <textarea name="" value={message} required onChange={(e) => setMessage(e.target.value)} id="" className="form-control"></textarea>
 
                   </div>
 

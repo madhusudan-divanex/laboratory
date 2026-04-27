@@ -10,11 +10,11 @@ import {
     faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { IoCloudUploadOutline } from "react-icons/io5";
-import { useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState } from "react";
 import React from 'react'
 
 import { FaSquarePlus } from "react-icons/fa6";
-import { getSecureApiData, securePostData, updateApiData } from "../../services/api";
+import { getApiData, getSecureApiData, securePostData, updateApiData } from "../../services/api";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import html2pdf from "html2pdf.js";
@@ -343,29 +343,7 @@ function ReportsTabs() {
             fetchInputPtData()
         }
     }, [inputPtId])
-    const fetchInputDoctorData = async () => {
-        if (inputDoctorId?.length < 8) {
-            return
-        }
-        if (patData && inputDoctorId?.length > 8) {
-            return
-        }
-        try {
-            const response = await getSecureApiData(`doctor/${inputDoctorId}`)
-            if (response.success) {
-                setDoctorData(response.data)
-            } else {
-                toast.error(response.message)
-            }
-        } catch (error) {
-
-        }
-    }
-    useEffect(() => {
-        if (inputDoctorId) {
-            fetchInputDoctorData()
-        }
-    }, [inputDoctorId])
+    
     const appointmentSubmit = async (e) => {
         e.preventDefault()
         if (selectedTest[0] === '') {
@@ -536,6 +514,25 @@ function ReportsTabs() {
             toast.error(error?.response?.data?.message || "Something went wrong")
         }
     }
+    async function fetchDoctorData() {
+        try {
+            const res = await getApiData(`api/comman/check-doctor-id/${inputDoctorId}`);
+            if (res.success) {
+                setDoctorData(res.data)
+            } else {
+                toast.error("Doctor id not found")
+            }
+
+        } catch (error) {
+            toast.error("Doctor ID not found")
+        }
+    }
+    useEffect(() => {
+        setDoctorData()
+        if (inputDoctorId?.length == 12) {
+            fetchDoctorData()
+        }
+    }, [inputDoctorId])
     return (
         <>
             {loading ? <Loader />
@@ -1225,126 +1222,126 @@ function ReportsTabs() {
                                                                                 </tr>
                                                                             </thead>
                                                                             <tbody>
-  {testData.map((item) => (
-    <React.Fragment key={item._id}>
-      
-      {/* Department Row */}
-      <tr>
-        <td colSpan="5" className="fw-bold">
-          {item?.labDept?.departmentName}
-        </td>
-      </tr>
+                                                                                {testData.map((item) => (
+                                                                                    <React.Fragment key={item._id}>
 
-      {/* Component Rows */}
-      {item?.component.map((c, i) => {
-        const selectedResultValue =
-          allComponentResults[item?._id]?.[i]?.result || "";
+                                                                                        {/* Department Row */}
+                                                                                        <tr>
+                                                                                            <td colSpan="5" className="fw-bold">
+                                                                                                {item?.labDept?.departmentName}
+                                                                                            </td>
+                                                                                        </tr>
 
-        const selectedOption =
-          c?.optionType === "select"
-            ? c.result?.find((r) => r.value === selectedResultValue)?.note
-            : c.textResult;
+                                                                                        {/* Component Rows */}
+                                                                                        {item?.component.map((c, i) => {
+                                                                                            const selectedResultValue =
+                                                                                                allComponentResults[item?._id]?.[i]?.result || "";
 
-        return (
-          <React.Fragment key={i}>
-            <tr>
-              <td>
-                {item?.shortName} - {c?.title}
-              </td>
-              <td>{c?.unit}</td>
-              <td>{c?.referenceRange}</td>
+                                                                                            const selectedOption =
+                                                                                                c?.optionType === "select"
+                                                                                                    ? c.result?.find((r) => r.value === selectedResultValue)?.note
+                                                                                                    : c.textResult;
 
-              {/* Result Input */}
-              <td>
-                <div className="custom-frm-bx mb-0">
-                  {c?.optionType === "text" ? (
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={selectedResultValue}
-                      onChange={(e) =>
-                        setAllComponentResults((prev) => ({
-                          ...prev,
-                          [item?._id]: {
-                            ...prev[item?._id],
-                            [i]: {
-                              ...prev[item?._id]?.[i],
-                              result: e.target.value,
-                            },
-                          },
-                        }))
-                      }
-                      placeholder="Enter"
-                    />
-                  ) : (
-                    <select
-                      className="form-select"
-                      value={selectedResultValue}
-                      onChange={(e) =>
-                        setAllComponentResults((prev) => ({
-                          ...prev,
-                          [item?._id]: {
-                            ...prev[item?._id],
-                            [i]: {
-                              ...prev[item?._id]?.[i],
-                              result: e.target.value,
-                            },
-                          },
-                        }))
-                      }
-                    >
-                      <option value="">Select</option>
-                      {c?.result?.map((r) => (
-                        <option key={r.value} value={r.value}>
-                          {r.value}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-              </td>
+                                                                                            return (
+                                                                                                <React.Fragment key={i}>
+                                                                                                    <tr>
+                                                                                                        <td>
+                                                                                                            {item?.shortName} - {c?.title}
+                                                                                                        </td>
+                                                                                                        <td>{c?.unit}</td>
+                                                                                                        <td>{c?.referenceRange}</td>
 
-              {/* Status */}
-              <td>
-                <div className="custom-frm-bx ms-2 mb-0">
-                  <select
-                    className="form-select"
-                    value={
-                      allComponentResults[item?._id]?.[i]?.status || ""
-                    }
-                    onChange={(e) =>
-                      setAllComponentResults((prev) => ({
-                        ...prev,
-                        [item?._id]: {
-                          ...prev[item?._id],
-                          [i]: {
-                            ...prev[item?._id]?.[i],
-                            status: e.target.value,
-                          },
-                        },
-                      }))
-                    }
-                  >
-                    <option value="">Select</option>
-                    <option value="Positive">Positive</option>
-                    <option value="Negative">Negative</option>
-                  </select>
-                </div>
-              </td>
-            </tr>
+                                                                                                        {/* Result Input */}
+                                                                                                        <td>
+                                                                                                            <div className="custom-frm-bx mb-0">
+                                                                                                                {c?.optionType === "text" ? (
+                                                                                                                    <input
+                                                                                                                        type="text"
+                                                                                                                        className="form-control"
+                                                                                                                        value={selectedResultValue}
+                                                                                                                        onChange={(e) =>
+                                                                                                                            setAllComponentResults((prev) => ({
+                                                                                                                                ...prev,
+                                                                                                                                [item?._id]: {
+                                                                                                                                    ...prev[item?._id],
+                                                                                                                                    [i]: {
+                                                                                                                                        ...prev[item?._id]?.[i],
+                                                                                                                                        result: e.target.value,
+                                                                                                                                    },
+                                                                                                                                },
+                                                                                                                            }))
+                                                                                                                        }
+                                                                                                                        placeholder="Enter"
+                                                                                                                    />
+                                                                                                                ) : (
+                                                                                                                    <select
+                                                                                                                        className="form-select"
+                                                                                                                        value={selectedResultValue}
+                                                                                                                        onChange={(e) =>
+                                                                                                                            setAllComponentResults((prev) => ({
+                                                                                                                                ...prev,
+                                                                                                                                [item?._id]: {
+                                                                                                                                    ...prev[item?._id],
+                                                                                                                                    [i]: {
+                                                                                                                                        ...prev[item?._id]?.[i],
+                                                                                                                                        result: e.target.value,
+                                                                                                                                    },
+                                                                                                                                },
+                                                                                                                            }))
+                                                                                                                        }
+                                                                                                                    >
+                                                                                                                        <option value="">Select</option>
+                                                                                                                        {c?.result?.map((r) => (
+                                                                                                                            <option key={r.value} value={r.value}>
+                                                                                                                                {r.value}
+                                                                                                                            </option>
+                                                                                                                        ))}
+                                                                                                                    </select>
+                                                                                                                )}
+                                                                                                            </div>
+                                                                                                        </td>
 
-            {/* Note Row */}
-            <tr>
-              <td colSpan="5">
-                <strong>Note:</strong> {selectedOption || "-"}
-              </td>
-            </tr>
-          </React.Fragment>
-        );
-      })}
-    </React.Fragment>
-  ))}
-</tbody>
+                                                                                                        {/* Status */}
+                                                                                                        <td>
+                                                                                                            <div className="custom-frm-bx ms-2 mb-0">
+                                                                                                                <select
+                                                                                                                    className="form-select"
+                                                                                                                    value={
+                                                                                                                        allComponentResults[item?._id]?.[i]?.status || ""
+                                                                                                                    }
+                                                                                                                    onChange={(e) =>
+                                                                                                                        setAllComponentResults((prev) => ({
+                                                                                                                            ...prev,
+                                                                                                                            [item?._id]: {
+                                                                                                                                ...prev[item?._id],
+                                                                                                                                [i]: {
+                                                                                                                                    ...prev[item?._id]?.[i],
+                                                                                                                                    status: e.target.value,
+                                                                                                                                },
+                                                                                                                            },
+                                                                                                                        }))
+                                                                                                                    }
+                                                                                                                >
+                                                                                                                    <option value="">Select</option>
+                                                                                                                    <option value="Positive">Positive</option>
+                                                                                                                    <option value="Negative">Negative</option>
+                                                                                                                </select>
+                                                                                                            </div>
+                                                                                                        </td>
+                                                                                                    </tr>
+
+                                                                                                    {/* Note Row */}
+                                                                                                    <tr>
+                                                                                                        <td colSpan="5">
+                                                                                                            <strong>Note:</strong> {selectedOption || "-"}
+                                                                                                        </td>
+                                                                                                    </tr>
+                                                                                                </React.Fragment>
+                                                                                            );
+                                                                                        })}
+                                                                                    </React.Fragment>
+                                                                                ))}
+                                                                            </tbody>
                                                                         </table>
                                                                     </div>
                                                                 </div>
