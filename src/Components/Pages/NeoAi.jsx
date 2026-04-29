@@ -32,6 +32,7 @@ function NeoAi() {
     const recordTimerRef = useRef(null);
     const [chatSessions, setChatSessions] = useState([]);
     const [activeChatId, setActiveChatId] = useState(null);
+    const skipFetchOnChatIdChange = useRef(false);
     async function fetchGeneralQuestions() {
         if (!question.trim()) return;
         setMyQuestions(prev => [
@@ -53,6 +54,7 @@ function NeoAi() {
         if (!activeChatId) {
             const res = await securePostData("api/comman/create-chat");
             chatSessionId = res.data?._id
+            skipFetchOnChatIdChange.current = true;
             setActiveChatId(res.data?._id)
         } else {
             chatSessionId = activeChatId
@@ -151,6 +153,7 @@ function NeoAi() {
         if (!activeChatId) {
             const res = await securePostData("api/comman/create-chat");
             chatSessionId = res.data?._id
+            skipFetchOnChatIdChange.current = true;
             setActiveChatId(res.data?._id)
         } else {
             chatSessionId = activeChatId
@@ -184,12 +187,16 @@ function NeoAi() {
 
     useEffect(() => {
         if (activeChatId) {
+            if (skipFetchOnChatIdChange.current) {
+                skipFetchOnChatIdChange.current = false;
+                return;
+            }
             fetchMyQuestions(activeChatId);
         }
     }, [activeChatId]);
     useEffect(() => {
         fetchChatSessions();
-    }, []);
+    }, [myQuestions]);
 
     async function fetchChatSessions() {
         setLoading(true)

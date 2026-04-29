@@ -59,7 +59,7 @@ function TestReportsAppoiments() {
   }
   useEffect(() => {
     fetchLabStaff()
-    fetchLabTest()
+    // fetchLabTest()
     fetchLabAppointment()
   }, [userId])
   const [appointments, setAppointments] = useState([])
@@ -86,7 +86,7 @@ function TestReportsAppoiments() {
     let data = {}
     if (type == 'status') {
 
-      data = { type, labId: userId, appointmentId: actData.appointmentId, status: actData?.status, labStaff: actData.labStaff }
+      data = { type, labId: userId, appointmentId: actData.appointmentId, status: actData?.status, staff: actData.labStaff }
       try {
         const response = await updateApiData(`appointment/lab-action`, data);
         if (response.success) {
@@ -220,14 +220,14 @@ function TestReportsAppoiments() {
                   </select>
                 </div>
 
-                <div className="field custom-frm-bx mb-0">
+                {/* <div className="field custom-frm-bx mb-0">
                   <label className="label">Test :</label>
                   <select name="test" value={filter.test} onChange={(e) => setFilter({ ...filter, test: e.target.value })}>
                     <option value=''>All</option>
                     {allTest?.map((item, key) =>
                       <option value={item?._id}>{item?.shortName}</option>)}
                   </select>
-                </div>
+                </div> */}
 
                 <div className="field custom-frm-bx mb-0">
                   <label className="label">Date from:</label>
@@ -342,8 +342,8 @@ function TestReportsAppoiments() {
                             </td>
                             <td>
                               <ul className="admin-test-list">
-                                {item?.testId?.map((test, key) =>
-                                  <li className="admin-test-item" key={key}>{test?.shortName}</li>)}
+                                {item?.subCatId?.map((test, key) =>
+                                  <li className="admin-test-item" key={key}>{test?.subCategory}</li>)}
                                 {/* <li className="admin-test-item">Haemoglobin</li> */}
                               </ul>
                             </td>
@@ -396,7 +396,7 @@ function TestReportsAppoiments() {
                                 <FontAwesomeIcon icon={faGear} /> Action
                               </a>
 
-                              <div class="dropdown">
+                              <div class="dropdown position-static">
                                 <a
                                   href="javascript:void(0)"
                                   class="attendence-edit-btn"
@@ -579,7 +579,7 @@ function TestReportsAppoiments() {
                 <div className="col-lg-12">
                   <div className="custom-frm-bx">
                     <label htmlFor="">Doctor</label>
-                    <select className="form-control nw-control-frm" value={actData.labStaff} onChange={(e) => setActData({ ...actData, labStaff: e.target.value })}>
+                    <select className="form-control nw-control-frm" required value={actData.labStaff} onChange={(e) => setActData({ ...actData, labStaff: e.target.value })}>
                       <option>----Select Doctor----</option>
                       {employees?.map((item, key) =>
                         <option value={item?.userId?._id}>{item?.userId.name}</option>)}

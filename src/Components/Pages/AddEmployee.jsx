@@ -629,20 +629,20 @@ function AddEmployee() {
                                             {/* Personal Info Tab */}
                                             <div className="tab-pane fade show active" id="home" role="tabpanel">
                                                 <form onSubmit={userInfoSubmit}>
-                                                    <div className="row">
+                                                   <div className="row">
                                                         <div className="d-flex align-items-center gap-3 mb-3">
                                                             <h4 className="subtitle text-black mb-0">Personal Information</h4>
                                                         </div>
                                                         <div className="col-lg-4 col-md-6 col-sm-12">
                                                             <div className="custom-frm-bx">
                                                                 <div className="upload-box p-3" onDrop={imageDrop} onDragOver={imageDragOver}>
-                                                                    {!isExistingStaff && (
+                                                                    
                                                                         <div className="upload-icon mb-2">
                                                                             <IoCloudUploadOutline />
                                                                         </div>
-                                                                    )}
+                                                                 
                                                                     <div>
-                                                                        {!isExistingStaff && (
+                                                                        {/* {!isExistingStaff && ( */}
                                                                             <>
                                                                                 <p className="fw-semibold mb-1">
                                                                                     <label htmlFor="fileInput1" className="file-label file-select-label">
@@ -665,7 +665,7 @@ function AddEmployee() {
                                                                                     accept=".png,.jpg,.jpeg"
                                                                                 />
                                                                             </>
-                                                                        )}
+                                                                        {/* )}  */}
                                                                         {personalInfo.profileImage instanceof File && (
                                                                             <div id="filePreviewWrapper" className="mt-3">
                                                                                 <img

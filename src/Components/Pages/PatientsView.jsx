@@ -19,7 +19,7 @@ function PatientsView() {
     const [ptData, setPtData] = useState()
     const [isLoading, setIsLoading] = useState(true)
     const dispatch = useDispatch()
-    const { isOwner, permissions } = useSelector(state => state.user)
+    const { isOwner, permissions ,user} = useSelector(state => state.user)
     useDispatch(() => {
         dispatch(fetchUserDetail())
     }, [dispatch])
@@ -565,7 +565,7 @@ function PatientsView() {
                                                                                         <div className="admin-table-sub-details d-flex align-items-center gap-2 doctor-title ">
                                                                                             <div>
                                                                                                 <h6 className="reprting-name">{item?.labId?.name}</h6>
-                                                                                                <p className="fs-14 fw-500">LAB-{item?.labId?.customId}</p>
+                                                                                                <p className="fs-14 fw-500">{user?.nh12}</p>
                                                                                             </div>
                                                                                         </div>
 
@@ -582,7 +582,7 @@ function PatientsView() {
                                                                                 <div className="barcd-content">
                                                                                     <h4 className="fw-700 mb-2">SP-{item?.testId?.customId}</h4>
                                                                                     <ul className="qrcode-list mb-2">
-                                                                                        <li className="qrcode-item">Test  <span className="qrcode-title">: {item?.testId?.shortName}</span></li>
+                                                                                        <li className="qrcode-item">Test  <span className="qrcode-title">: {item?.subCatId?.subCategory}</span></li>
                                                                                         <li className="qrcode-item">Draw  <span className="qrcode-title"> : {new Date(item?.createdAt)?.toLocaleString()}</span> </li>
                                                                                     </ul>
 

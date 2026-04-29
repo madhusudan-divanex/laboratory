@@ -68,7 +68,7 @@ function ReportsTabs() {
             setIsSaving(true)
             const response = await getSecureApiData(`lab/appointment-data/${id}`)
             if (response.success) {
-                if (!response?.data?.labStaff) {
+                if (!response?.data?.staff) {
                     return toast.error("Please assign the doctor first")
                 }
                 if (response.data.status === 'deliver-report') {
@@ -77,7 +77,7 @@ function ReportsTabs() {
                 } else {
                     toast.success("Appointment Fetched successfully")
 
-                    setTestId(response.data.testId)
+                    setTestId(response.data.subCatId)
                     handleBack("profile-tab");
                     setAppointmentData(response.data)
                     setIsCollected(response?.data?.collectionDate ? true : false)
@@ -109,11 +109,11 @@ function ReportsTabs() {
             fetchLabTest()
         }
     }, [userId])
-    const subtotal = appointmentData?.testId
-        ?.reduce((acc, item) => acc + Number(item?.price || 0), 0) || 0;
+    const subtotal = appointmentData?.testData
+        ?.reduce((acc, item) => acc + Number(item?.fees || 0), 0) || 0;
 
     const gst = subtotal * 0.05;
-    const total = subtotal + gst;
+    const total = subtotal;
     const fetchPtData = async () => {
         if (!appointmentData?.patientId?._id) {
             return
@@ -134,7 +134,7 @@ function ReportsTabs() {
     }, [appointmentData])
     const fetchTestReport = async (testId) => {
         try {
-            const payload = { testId, appointmentId: appointmentData?._id };
+            const payload = { subCatId:testId, appointmentId: appointmentData?._id };
             const response = await securePostData('lab/test-report-data', payload);
 
             if (response.success && response.data) {
@@ -166,7 +166,7 @@ function ReportsTabs() {
 
             for (const id of testId) {
                 try {
-                    const response = await getSecureApiData(`lab/test-data/${id?._id}`);
+                    const response = await getSecureApiData(`api/comman/sub-test-category-data/${id?._id}`);
                     if (response.success) {
                         const test = response.data;
 
@@ -343,7 +343,7 @@ function ReportsTabs() {
             fetchInputPtData()
         }
     }, [inputPtId])
-    
+
     const appointmentSubmit = async (e) => {
         e.preventDefault()
         if (selectedTest[0] === '') {
@@ -385,9 +385,9 @@ function ReportsTabs() {
     }
     const handleSave = async (e) => {
         e.preventDefault();
-        if (!appointmentData?.collectionDate) {
-            return toast.error("Please collect sample before saving the report")
-        }
+        // if (!appointmentData?.collectionDate) {
+        //     return toast.error("Please collect sample before saving the report")
+        // }
         setLoading(true);
         // Loop through each test (key is testId)
         for (const testId in allComponentResults) {
@@ -415,6 +415,7 @@ function ReportsTabs() {
             formData.append('labId', userId)
             formData.append('patientId', appointmentData.patientId?._id)
             formData.append('testId', testId)
+            formData.append('subCatId', testId)
             formData.append('appointmentId', appointmentData._id)
             formData.append('remark', remark)
             formData.append('component', JSON.stringify(components))
@@ -644,7 +645,7 @@ function ReportsTabs() {
                                         </li>
 
 
-                                        <li className="nav-item" role="presentation">
+                                        {/* <li className="nav-item" role="presentation">
                                             <a
                                                 className="nav-link"
                                                 id="person-tab"
@@ -655,7 +656,7 @@ function ReportsTabs() {
                                             >
                                                 Report
                                             </a>
-                                        </li>
+                                        </li> */}
                                     </ul>
 
                                     <div className="tab-content mt-4" id="myTabContent">
@@ -818,39 +819,55 @@ function ReportsTabs() {
                                                                         </div>
                                                                     </div> */}
                                                                             {selectedTest?.map((item, key) => (
-                                                                                <div className="col-lg-12" key={key}>
-                                                                                    <div className="custom-frm-bx">
-                                                                                        <label htmlFor="">Add Lab Test</label>
-                                                                                        <div className="d-flex align-items-center gap-2">
-                                                                                            <select
-                                                                                                value={item}
-                                                                                                required
-                                                                                                onChange={(e) => handleChange(key, e.target.value)}
-                                                                                                className="form-select"
-                                                                                            >
-                                                                                                <option value="">Select Test</option>
-                                                                                                {allTest
-                                                                                                    ?.filter(
-                                                                                                        (t) =>
-                                                                                                            // Allow tests that are not already selected OR the current one (to allow reselecting it)
-                                                                                                            !selectedTest.includes(t._id) || t._id === item
-                                                                                                    )
-                                                                                                    .map((t) => (
-                                                                                                        <option key={t._id} value={t._id}>
-                                                                                                            {t.shortName}
-                                                                                                        </option>
-                                                                                                    ))}
-                                                                                            </select>
+                                                                                <div className="row">
+                                                                                    <div className="col-lg-12" key={key}>
+                                                                                        <div className="custom-frm-bx">
+                                                                                            <label htmlFor="">Add Lab Test</label>
+                                                                                            <div className="d-flex align-items-center gap-2">
+                                                                                                <select
+                                                                                                    value={item}
+                                                                                                    required
+                                                                                                    onChange={(e) => handleChange(key, e.target.value)}
+                                                                                                    className="form-select"
+                                                                                                >
+                                                                                                    <option value="">Select Test</option>
+                                                                                                    {allTest
+                                                                                                        ?.filter(
+                                                                                                            (t) =>
+                                                                                                                // Allow tests that are not already selected OR the current one (to allow reselecting it)
+                                                                                                                !selectedTest.includes(t._id) || t._id === item
+                                                                                                        )
+                                                                                                        .map((t) => (
+                                                                                                            <option key={t._id} value={t._id}>
+                                                                                                                {t.category?.name}
+                                                                                                            </option>
+                                                                                                        ))}
+                                                                                                </select>
 
-                                                                                            <button
-                                                                                                className="text-black"
-                                                                                                disabled={selectedTest?.length === 1}
-                                                                                                onClick={() => handleRemoveTest(key)}
-                                                                                            >
-                                                                                                <FontAwesomeIcon icon={faTrash} />
-                                                                                            </button>
+                                                                                                <button
+                                                                                                    className="text-black"
+                                                                                                    disabled={selectedTest?.length === 1}
+                                                                                                    onClick={() => handleRemoveTest(key)}
+                                                                                                >
+                                                                                                    <FontAwesomeIcon icon={faTrash} />
+                                                                                                </button>
+                                                                                            </div>
                                                                                         </div>
                                                                                     </div>
+                                                                                    {/* {<div className="col-md-4">
+                                                                                        <div className="form-check custom-check">
+                                                                                            <input
+                                                                                                className="form-check-input"
+                                                                                                type="checkbox"
+                                                                                                id="reportsList"
+                                                                                                checked={hasLRx}
+                                                                                                onChange={(e) => setHasLRx(e.target.checked)}
+                                                                                            />
+                                                                                            <label className="form-check-label" htmlFor="reportsList">
+                                                                                                Has L-Rx
+                                                                                            </label>
+                                                                                        </div>
+                                                                                    </div>} */}
                                                                                 </div>
                                                                             ))}
                                                                             <div className="d-flex align-items-center gap-2 justify-content-end">
@@ -913,9 +930,9 @@ function ReportsTabs() {
                                                             <div className="laboratory-report-bx">
                                                                 <ul className="laboratory-report-list">
                                                                     <li className="laboratory-item"><span>Test</span> <span>Price</span></li>
-                                                                    {appointmentData?.testId?.map((item, key) =>
+                                                                    {appointmentData?.testData?.map((item, key) =>
                                                                         <li className="laboratory-item border-0" key={key}>
-                                                                            <span>{item?.shortName}</span> <span>{item?.price}</span></li>)}
+                                                                            <span>{item?.name}</span> <span>{item?.fees}</span></li>)}
                                                                 </ul>
                                                                 <div className="lab-amount-bx">
                                                                     <ul className="lab-amount-list">
@@ -976,7 +993,7 @@ function ReportsTabs() {
                                                                             <div className="laboratory-bill-bx">
                                                                                 <h4>{item?.code}</h4>
                                                                                 <p><span className="laboratory-phne">Test :</span> {item?.shortName}</p>
-                                                                                <p><span className="laboratory-phne text-capitalize">Category :</span> {item?.testCategory}</p>
+                                                                                <p><span className="laboratory-phne text-capitalize">Category :</span> {item?.category?.name}</p>
                                                                                 <p><span className="laboratory-phne">Special Approval :</span> {item?.specialApproval ? 'Yes' : 'No'}</p>
                                                                                 <p><span className="laboratory-phne text-capitalize">Fasting :</span> {item?.fastingRequired ? 'Yes' : 'No'}</p>
                                                                             </div>

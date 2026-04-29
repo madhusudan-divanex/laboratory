@@ -3812,6 +3812,16 @@ min-height: 100vh; */
     width: 50px;
     height: 50px;
 }
+.nw-chip-card {
+    position: absolute;
+    top: 30px;
+    left: 20px;
+    background-image: url(/labCardLogo.png);
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 50px;
+    height: 50px;
+}
 
 .add-patients-clients img {
     width: 300px;

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { getSecureApiData, securePostData } from "../../services/api";
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import html2pdf from "html2pdf.js";
 import html2canvas from "html2canvas";
@@ -22,7 +22,7 @@ function ReportView() {
   const [allComponentResults, setAllComponentResults] = useState({});
   const [allComments, setAllComments] = useState({});
   const [reportMeta, setReportMeta] = useState({});
-  const [fullReportData,setFullReportData] =useState()
+  const [fullReportData, setFullReportData] = useState()
 
   const { profiles, labPerson, labAddress, labImg,
     rating, avgRating, labLicense, isRequest, isOwner, permissions } = useSelector(state => state.user)
@@ -31,7 +31,7 @@ function ReportView() {
     try {
       const response = await getSecureApiData(`lab/appointment-data/${appointmentId}`)
       if (response.success) {
-        setTestId(response.data.testId)
+        setTestId(response.data.subCatId)
         setAppointmentData(response.data)
         setLoading(false)
       } else {
@@ -64,7 +64,7 @@ function ReportView() {
   }, [appointmentData])
   const fetchTestReport = async (testId) => {
     try {
-      const payload = { testId, appointmentId };
+      const payload = { subCatId: testId, appointmentId };
       const response = await securePostData('lab/test-report-data', payload);
 
       if (response.success && response.data) {
@@ -92,7 +92,7 @@ function ReportView() {
 
       for (const id of testId) {
         try {
-          const response = await getSecureApiData(`lab/test-data/${id._id}`);
+          const response = await getSecureApiData(`api/comman/sub-test-category-data/${id._id}`);
           if (response.success) {
             const test = response.data;
 
@@ -226,7 +226,7 @@ function ReportView() {
                     <div className="laboratory-name">
                       <h5>{profiles?.name || 'Advance Lab Tech'}</h5>
                       <p><span className="laboratory-title">GSTIN :</span> {profiles?.gstNumber || '09897886454'}</p>
-                      {appointmentData?.labStaff &&<p><span className="laboratory-title text-capitalize">Lab Doctor :</span> {appointmentData?.labStaff?.name}</p>}
+                      {appointmentData?.labStaff && <p><span className="laboratory-title text-capitalize">Lab Doctor :</span> {appointmentData?.labStaff?.name}</p>}
                     </div>
                     <div className="invoice-details">
                       <p><span className="laboratory-invoice">Invoice :</span> {appointmentData?.customId}</p>
@@ -312,7 +312,7 @@ function ReportView() {
                       </table>
 
                     </div>
-                  </div>               
+                  </div>
                   <div className="report-remark mt-3">
                     <h6>Remark</h6>
                     {fullReportData?.remark}
@@ -346,7 +346,9 @@ function ReportView() {
 
             </div>
           </div>
-
+          <div className="text-end">
+            <Link to={-1} className="nw-thm-btn rounded-3 outline">Go Back</Link>
+          </div>
 
         </div>}
     </>

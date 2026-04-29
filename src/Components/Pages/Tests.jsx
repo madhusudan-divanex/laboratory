@@ -104,7 +104,12 @@ function Tests() {
                     <div className="row">
                         <div className="d-flex align-items-center justify-content-between">
                             <div className="custom-frm-bx">
-                                <input value={name} onChange={(e) => setName(e.target.value)} type="text" className="form-control" placeholder="Search " />
+                                <input value={name} onChange={(e) => setName(e.target.value)} type="text" className="form-control" placeholder="Search "
+                                onKeyDown={(e)=>{
+                                    if(e.key=="Enter"){
+                                        fetchLabTest()
+                                    }
+                                }} />
 
                                 <div className="search-item-bx">
                                     <button className="search-item-btn" onClick={() => fetchLabTest()}><FontAwesomeIcon icon={faSearch} /></button>
@@ -142,10 +147,9 @@ function Tests() {
                                             <tr>
                                                 <th>S.no.</th>
                                                 <th>Test Categories Name</th>
-                                                <th>Short Name</th>
-                                                <th>Package Type</th>
+                                                <th>Sub Category</th>
                                                 <th>Price</th>
-                                                <th>Status</th>
+                                                {/* <th>Status</th> */}
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -155,10 +159,10 @@ function Tests() {
                                                     <tr key={key}>
                                                         <td>{key + 1}</td>
                                                         <td className="text-capitalize">{item?.category?.name}</td>
-                                                        <td>{item?.shortName}</td>
-                                                        <td>{item?.packageType}</td>
-                                                        <td>${item?.price}</td>
-                                                        <td>
+                                                        <td>{item?.subCatData?.filter(item => item?.status == "active")?.length} / {item?.subCatData?.length} Active</td>
+                                                        {/* <td>{item?.packageType}</td> */}
+                                                        <td>₹{item?.totalAmount}</td>
+                                                        {/* <td>
                                                             <div className="switch">
                                                                 <input type="checkbox"
                                                                     id={`toggle-${item._id}`}
@@ -168,57 +172,19 @@ function Tests() {
                                                                     } />
                                                                 <label for={`toggle-${item._id}`}></label>
                                                             </div>
-                                                        </td>
+                                                        </td> */}
                                                         <td>
-                                                            <a
-                                                                href="javascript:void(0)"
-                                                                className=" admin-sub-dropdown dropdown-toggle"
-                                                                data-bs-toggle="dropdown"
-                                                                aria-expanded="false"
-                                                            >
-                                                                <FontAwesomeIcon icon={faGear} /> Action
-                                                            </a>
+                                                            <button onClick={() => {
 
-                                                            <div className="dropdown">
-                                                                <a
-                                                                    href="javascript:void(0)"
-                                                                    className="attendence-edit-btn"
-                                                                    id="acticonMenu1"
-                                                                    data-bs-toggle="dropdown"
-                                                                    aria-expanded="false"
-                                                                >
+                                                                navigate(`/edit-test/${item?._id}`)
 
-                                                                </a>
-                                                                <ul
-                                                                    className="dropdown-menu dropdown-menu-end user-dropdown tble-action-menu"
-                                                                    aria-labelledby="acticonMenu1"
-                                                                >
-                                                                    <li className="drop-item">
-                                                                        <button onClick={() => {
-
-                                                                            navigate(`/edit-test/${item?._id}`)
-
-                                                                        }} className="nw-dropdown-item" href="#">
-                                                                            <FontAwesomeIcon
-                                                                                icon={faPen}
-                                                                                className=""
-                                                                            />
-                                                                            View / Edit
-                                                                        </button>
-                                                                    </li>
-
-
-                                                                    <li className="drop-item">
-                                                                        {/* <button className="nw-dropdown-item" onClick={() => deleteTest(item._id)}>
-                                                                            <FontAwesomeIcon
-                                                                                icon={faTrash}
-                                                                                className=""
-                                                                            />
-                                                                            Delete
-                                                                        </button> */}
-                                                                    </li>
-                                                                </ul>
-                                                            </div>
+                                                            }} >
+                                                                <FontAwesomeIcon
+                                                                    icon={faPen}
+                                                                    className="thm-clr"
+                                                                />
+                                                                
+                                                            </button>
                                                         </td>
                                                     </tr>)}
 

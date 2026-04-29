@@ -133,20 +133,15 @@ function AppointmentDetails() {
                   </ul>
                 </div>
               </div>
-
               <div className="appointment-crd-details">
                 <ul className="appointment-crd-list">
                   <li className="appointment-crd-item">Appointment ID : <span className="appointment-crd-title">#{appointmentData?.customId}</span></li>
                   <li className="appointment-crd-item">Appointment Completed date  : <span className="appointment-crd-title">-</span></li>
-                  <li className="appointment-crd-item">Amount : <span className="appointment-crd-title"> ${appointmentData?.fees}</span></li>
+                  <li className="appointment-crd-item">Amount : <span className="appointment-crd-title"> ₹ {appointmentData?.fees}</span></li>
                   <li className="appointment-crd-item">Payment Status : <span className="appointment-due-title text-capitalize"> {appointmentData?.paymentStatus}</span></li>
                 </ul>
               </div>
-
-
-
             </div>
-
             <div className="col-lg-6">
               <div className="d-flex gap-3 justify-content-end mb-3">
                 <div>
@@ -191,7 +186,7 @@ function AppointmentDetails() {
               <div className="laboratory-bill-bx mt-lg-5 mt-sm-3 mb-3">
                 <h6 className="my-0">Lab Doctor </h6>
                 <h4>Dr. {appointmentData?.staff?.name}</h4>
-                {/* <p><span className="laboratory-phne"> ID :</span> {appointmentData?.labStaff?.customId}</p> */}
+                <p><span className="laboratory-phne"> ID :</span> {appointmentData?.staff?.nh12}</p>
               </div>
               {appointmentData?.doctorId && <div className="laboratory-bill-bx mb-3">
                 <h6 className="my-0">Lab tests prescribed by the doctor</h6>

@@ -70,7 +70,7 @@ function AppointmentRequest() {
     }
     useEffect(() => {
         fetchLabAppointment()
-        fetchLabTest()
+        // fetchLabTest()
     }, [])
     const filterSubmit = (e) => {
         e.preventDefault()
@@ -134,14 +134,14 @@ function AppointmentRequest() {
                                         </select>
                                     </div>
 
-                                    <div className="field custom-frm-bx mb-0">
+                                    {/* <div className="field custom-frm-bx mb-0">
                                         <label className="label">Test:</label>
                                         <select name="test" value={filter.test} onChange={(e) => setFilter({ ...filter, test: e.target.value })}>
                                             <option value=''>All</option>
                                             {allTest?.map((item, key) =>
                                                 <option value={item?._id}>{item?.shortName}</option>)}
                                         </select>
-                                    </div>
+                                    </div> */}
 
                                     <div className="field custom-frm-bx mb-0">
                                         <label className="label">Date from:</label>
@@ -247,8 +247,8 @@ function AppointmentRequest() {
                                                         <td>
                                                             {/* {item?.testId?.map((item) => item?.shortName + ',')} */}
                                                             <ul className="admin-test-list">
-                                                                {item?.testId?.map((test, key) =>
-                                                                    <li className="admin-test-item" key={key}>{test?.shortName}</li>)}
+                                                                {item?.subCatId?.map((test, key) =>
+                                                                    <li className="admin-test-item" key={key}>{test?.subCategory}</li>)}
                                                                 {/* <li className="admin-test-item">Haemoglobin</li> */}
                                                             </ul>
 

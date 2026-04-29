@@ -290,20 +290,9 @@ function Departments() {
 
                                     <form onSubmit={handleAddDepartment}>
 
+                                        
                                         <div className="custom-frm-bx">
-                                            <label htmlFor="">Select Category</label>
-                                            <select name="" id="">
-
-                                            </select>
-                                            <input type="text" className="form-control custom-select"
-                                                placeholder="Enter Department Name"
-                                                value={form.departmentName}
-                                                onChange={(e) =>
-                                                    setForm({ ...form, departmentName: e.target.value })
-                                                } />
-                                        </div>
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Sub Category</label>
+                                            <label htmlFor="">Department Name</label>
                                             <input type="text" className="form-control custom-select"
                                                 placeholder="Enter Department Name"
                                                 value={form.departmentName}

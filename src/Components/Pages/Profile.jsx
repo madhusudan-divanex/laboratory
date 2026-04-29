@@ -16,6 +16,7 @@ import html2canvas from "html2canvas";
 import QRCode from "react-qr-code";
 import Loader from "../Layouts/Loader";
 import { getSecureApiData, securePostData } from "../../services/api";
+import { FlaskConical } from "lucide-react";
 function Profile() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -340,17 +341,21 @@ function Profile() {
                                 </div>
                                 <div className="d-flex align-items-center justify-content-center gap-2 carding-bx">
                                   <div className="add-patients-clients" ref={cardRef}>
-                                    <div className="chip-card"></div>
-                                    <img src="/LaboratoryNeoCard.png" alt="" />
+                                    <div className="nw-chip-card">
+                                      {/* <FlaskConical color="#fff" size={50}/> */}
+                                    </div>
+                                    <img src="/NeoCard.png" alt="" />
                                     <div className="patient-card-details">
-                                      <h4>{user?.name?.length > 20 ? user?.name?.slice(0,17)+'...' : user?.name}</h4>
-                                      <p>Laboratory ID</p>
+                                      <h4>{user?.name?.length > 20 ? user?.name?.slice(0, 17) + '...' : user?.name}</h4>
+                                      {/* <p>Laboratory ID</p> */}
                                       <h6>{user?.nh12}</h6>
                                     </div>
                                     <QRCode
-                                      readOnly value="691ee677c18c1233339c9e2a"
+                                      readOnly value={`https://neohealthcard.com/user/${user?.nh12}`}
                                       size={256}
                                       className="qr-code"
+                                      bgColor="transparent"
+                                      fgColor="#ffffff"
                                       style={{ height: "auto", maxWidth: "100%", width: "20%" }}
                                     // style={{ width: "200px", height: "200px" }}
                                     />

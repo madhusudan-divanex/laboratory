@@ -64,7 +64,7 @@ function LabTestReports() {
 
   useEffect(() => {
     if (appointmentData?.testId) {
-      const ids = appointmentData.testId.map(item => item);
+      const ids = appointmentData.subCatId.map(item => item);
       setTestId(ids);
     }
     fetchPtData()
@@ -76,7 +76,7 @@ function LabTestReports() {
 
       for (const id of testId) {
         try {
-          const response = await getSecureApiData(`lab/test-data/${id._id}`);
+          const response = await getSecureApiData(`api/comman/sub-test-category-data/${id._id}`);
           if (response.success) {
             const test = response.data;
 
@@ -130,13 +130,13 @@ function LabTestReports() {
       // textResult: allComponentResults[selectedTab]?.[i]?.textResult || "",
       status: allComponentResults[selectedTab]?.[i]?.status || ""
     }));
-    console.log(components)
     const payload = {
       labId: userId,
       patientId: appointmentData.patientId,
       testId: selectedTab,
+      subCatId:selectedTab,
       appointmentId: appointMentId,
-      component: components,
+      component: JSON.stringify(components),
       comment: allComments[selectedTab] || ""
     };
 
@@ -153,15 +153,15 @@ function LabTestReports() {
     }
   };
 
-  const fetchTestReport = async (testId) => {
+  const fetchTestReport = async (subCatId) => {
     try {
-      const payload = { testId, appointmentId: appointMentId };
+      const payload = { subCatId, appointmentId: appointMentId };
       const response = await securePostData('lab/test-report-data', payload);
 
       if (response.success && response.data) {
         setReportMeta(prev => ({
           ...prev,
-          [testId]: {
+          [subCatId]: {
             id: response.data?._id,
             createdAt: response.data.createdAt
           }
@@ -211,7 +211,7 @@ function LabTestReports() {
 
       for (const id of testId) {
         try {
-          const response = await getSecureApiData(`lab/test-data/${id._id}`);
+          const response = await getSecureApiData(`api/comman/sub-test-category-data/${id._id}`);
           if (response.success) {
             const test = response.data;
 
