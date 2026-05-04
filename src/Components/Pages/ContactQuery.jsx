@@ -126,13 +126,9 @@ function ContactQuery() {
                                         />
                                     </div>
                                 </div>
-
-
-
                                 <div className="col-lg-12">
                                     <div className="text-center mt-3">
-                                        <button disabled={loading} className="nw-thm-btn rounded-2 w-75" type="submit"
-                                        >
+                                        <button disabled={loading} className="nw-thm-btn rounded-2 w-75" type="submit">
                                             {loading?"Submitting...":"Submit"}
                                         </button>
                                     </div>

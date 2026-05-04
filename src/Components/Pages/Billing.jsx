@@ -313,7 +313,7 @@ const NeoHealthCardLabTemplates = ({ appointmentId, pdfLoading, endLoading }) =>
                   {cmp?.unit}
                 </td>
                 <td className="nh-inv-td">
-                  {cmp?.referenceRange}
+                  {cmp?.minRange}-{cmp?.maxRange}
                 </td>
                 <td className="nh-inv-td">
                   <span

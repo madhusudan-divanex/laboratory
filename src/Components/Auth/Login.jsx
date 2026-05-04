@@ -69,6 +69,7 @@ function Login() {
             toast.success(`Login Success`)
             navigate(`/otp?contact=${formData?.contactNumber || formData?.email}`)
           } else {
+            localStorage.setItem('staffId', response.staffId)
             toast.success('Verify successfully');
             localStorage.setItem('token', response.token);
             localStorage.setItem('userId', response.userId);

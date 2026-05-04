@@ -43,12 +43,7 @@ function NewInvoice() {
       fetchAppointmentData()
     }
   }, [appointmentId])
-  // Calculate subtotal, GST and total
-  const subtotal = appointmentData?.testData
-    ?.reduce((acc, item) => acc + Number(item?.fees || 0), 0) || 0;
 
-  const gst = subtotal * 0.05;
-  const total = subtotal + gst;
   const handleReportDownload = (appointmentId) => {
     setPdfLoading(true)
     // setSelectedReport({ appointmentId });
@@ -72,30 +67,62 @@ function NewInvoice() {
   }, [appointmentData])
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
+    const updatedData = { ...formData, [name]: value }
+
+    if (name === 'discount' || name === 'taxes') {
+      const subTotal = Number(updatedData.subTotal || 0)
+      const discount = Number(updatedData.discount || 0)
+      const taxes = Number(updatedData.taxes || 0)
+
+      const discountAmount = (subTotal * discount) / 100
+      const afterDiscount = subTotal - discountAmount
+      const taxAmount = (afterDiscount * taxes) / 100
+      const total = afterDiscount + taxAmount
+
+      // Round to 2 decimal places to prevent precision issues
+      updatedData.total = Math.round((total + Number.EPSILON) * 100) / 100
+    }
+
+    setFormData(updatedData)
   }
+  // appointmentData load hone par subTotal calculate karo
   useEffect(() => {
-    const subTotal = Number(formData.subTotal || 0);
-    const discount = Number(formData.discount || 0);
-    const tax = Number(formData.taxes || 0);
+    if (!appointmentData?.testId?.length) return
 
-    // Calculate discount amount
-    const discountAmount = (subTotal * discount) / 100;
+    const sub = appointmentData.testId.reduce((acc, test) => {
+      const totalSubCats = appointmentData?.subCatId?.filter(
+        s => s?.category?.toString() === test?.category?._id?.toString()
+      )?.length
 
-    // Price after discount
-    const discountedPrice = subTotal - discountAmount;
+      const selectedSubCats = test?.subCatData?.length
+      const isAllSelected = totalSubCats === selectedSubCats
 
-    // GST amount
-    const taxAmount = (discountedPrice * tax) / 100;
+      if (isAllSelected) {
+        // Sari subcategories select hain — totalAmount use karo
+        return acc + Number(test?.totalAmount || 0)
+      } else {
+        // Sirf selected subcategories ka price add karo
+        const partial = test?.subCatData?.reduce(
+          (sum, sub) => sum + Number(sub?.price || 0), 0
+        )
+        return acc + partial
+      }
+    }, 0)
 
-    // Final total
-    const total = discountedPrice + taxAmount;
-
-    setFormData((prev) => ({
-      ...prev,
-      total: total.toFixed(2), // optional rounding
-    }));
-  }, [formData.subTotal, formData.discount, formData.taxes]);
+    if (appointmentData?.invoiceId) {
+      const data = appointmentData.invoiceId
+      setFormData({
+        ...formData,
+        subTotal: data?.subTotal,
+        discount: data?.discount,
+        total: data?.total,
+        taxes: data?.taxes,
+        paymentType: data?.paymentType
+      })
+    } else {
+      setFormData(prev => ({ ...prev, subTotal: sub, total: sub }))
+    }
+  }, [appointmentData])
 
   const billSubmit = async () => {
     if (!formData?.paymentType) {
@@ -113,7 +140,7 @@ function NewInvoice() {
       }
     } catch (error) {
       toast.error(error?.response?.data?.message)
-    } finally{
+    } finally {
       setLoading(false)
     }
   }
@@ -155,7 +182,7 @@ function NewInvoice() {
                     <div>
                       <h5 className="first_para fw-700 fz-20 mb-0">Invoice</h5>
                     </div>
-                    {appointmentData?.invoiceId &&<div>
+                    {appointmentData?.invoiceId && <div>
                       <button className="print-btn no-print" onClick={handleReportDownload}> <FontAwesomeIcon icon={faDownload} /> Download PDF</button>
                     </div>}
                   </div>
@@ -187,85 +214,124 @@ function NewInvoice() {
                   <div className="laboratory-report-bx">
                     <ul className="laboratory-report-list">
                       <li className="laboratory-item"><span>Test</span> <span>Price</span></li>
-                      {appointmentData?.testData?.map((item, key) =>
-                        <li className="laboratory-item border-0" key={key}><span>{item?.name}</span> <span>₹ {item?.fees}</span></li>)}
+                      {appointmentData?.testId?.map((test, key) => {
+
+                        // 👉 total available subcategories (from master list)
+                        const totalSubCats = appointmentData?.subCatId?.filter(
+                          s => s?.category?.toString() === test?.category?._id?.toString()
+                        )?.length;
+
+                        // 👉 selected subcategories (from test data)
+                        const selectedSubCats = test?.subCatData?.length;
+                        const isAllSelected = totalSubCats === selectedSubCats;
+
+                        return (
+                          <div key={key}>
+
+                            {/* ✅ Category */}
+                            <li className="laboratory-item border-0">
+                              <strong>{test?.category?.name}</strong>
+
+                              {/* 👉 condition */}
+                              {isAllSelected && (
+                                <span>₹ {test?.totalAmount}</span>
+                              )}
+                            </li>
+
+                            {/* ✅ Subcategories */}
+                            {test?.subCatData?.map((sub, i) => {
+                              const subCategoryData = appointmentData?.subCatId?.find(
+                                s => s?._id?.toString() === sub?.subCat?.toString()
+                              );
+
+                              return (
+                                <li className="laboratory-item border-0 ps-3" key={i}>
+                                  <span>{subCategoryData?.subCategory}</span>
+                                  {!isAllSelected && <span>₹ {sub?.price}</span>}
+                                </li>
+                              );
+                            })}
+
+                          </div>
+                        );
+                      })}
                     </ul>
 
                     <div className="">
                       <div className="row ">
                         <div className="col-lg-6 align-content-center">
                           <div className="custom-frm-bx">
-                          <label className="">Sub Total ₹  :  </label>
+                            <label className="">Sub Total ₹  :  </label>
                           </div>
                         </div>
 
                         <div className="col-lg-6">
                           <div className="custom-frm-bx">
                             <input type="number" min={0} className="form-control" value={formData?.subTotal}
-                            readOnly name="subTotal" />
+                              readOnly name="subTotal" />
                           </div>
                         </div>
 
                         <div className="col-lg-6 align-content-center">
                           <div className="custom-frm-bx">
-                          <label className="">Discount (%) :  </label>
+                            <label className="">Discount (%) :  </label>
+                          </div>
+                        </div>
+
+                        <div className="col-lg-6">
+                          <div className="custom-frm-bx">
+                            <input type="number" min={0} max={99} className="form-control"
+                              readOnly={appointmentData?.invoiceId} value={formData?.discount}
+                              onChange={handleChange} name="discount" />
+                          </div>
+                        </div>
+
+                        <div className="col-lg-6 align-content-center">
+                          <div className="custom-frm-bx">
+                            <label className="">GST (%) :  </label>
                           </div>
                         </div>
 
                         <div className="col-lg-6">
                           <div className="custom-frm-bx">
                             <input type="number" min={0} className="form-control"
-                            readOnly={appointmentData?.invoiceId} value={formData?.discount}
-                            onChange={handleChange} name="discount" />
-                          </div>
-                        </div>
-
-                        <div className="col-lg-6 align-content-center">
-                          <div className="custom-frm-bx">
-                          <label className="">GST (%) :  </label>
-                          </div>
-                        </div>
-
-                        <div className="col-lg-6">
-                          <div className="custom-frm-bx">
-                            <input type="number" min={0} className="form-control"
-                            readOnly={appointmentData?.invoiceId}
-                            value={formData?.taxes}
-                            onChange={handleChange} name="taxes" />
+                              readOnly={appointmentData?.invoiceId}
+                              value={formData?.taxes}
+                              onChange={handleChange} name="taxes" />
                           </div>
                         </div>
 
                         <div className="col-lg-6 align-content-center">
                           <div className="custom-frm-bx ">
-                          <label className="">Total ₹ :  </label>
+                            <label className="">Total ₹ :  </label>
                           </div>
                         </div>
 
                         <div className="col-lg-6">
                           <div className="custom-frm-bx">
                             <input type="number" min={0} className="form-control" value={formData?.total}
-                            readOnly name="total" />
+                              readOnly name="total" />
                           </div>
                         </div>
 
                         <div className="col-lg-6 align-content-center">
                           <div className="custom-frm-bx ">
-                          <label className="">Payment Type :  </label>
+                            <label className="">Payment Type :  </label>
                           </div>
                         </div>
 
                         <div className="col-lg-6 ">
                           <div className="custom-frm-bx">
                             <select className="form-select" id="" readOnly={appointmentData?.invoiceId}
-                            value={formData?.paymentType} onChange={handleChange} name="paymentType">
-                            <option selected>Select type</option>
-                            <option value="CARD">CARD</option>
-                            <option value="CASH">CASH</option>
-                            <option value="ONLINE">ONLINE</option>
-                          </select>
+                              value={formData?.paymentType} onChange={handleChange} name="paymentType">
+                              <option selected>Select type</option>
+                              <option value="CARD">CARD</option>
+                              <option value="CASH">CASH</option>
+                              <option value="ONLINE">ONLINE</option>
+                            </select>
 
                           </div>
-                          
+
                         </div>
                       </div>
 

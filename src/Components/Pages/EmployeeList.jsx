@@ -21,7 +21,7 @@ function EmployeeList() {
   const fetchLabStaff = async () => {
     try {
       const response = await getSecureApiData(`api/staff/list?page=${currentPage}&name=${name}`);
-      
+
       if (response.success) {
         setEmployees(response.staffData)
         setTotalPage(response.pagination.totalPages)
@@ -196,7 +196,7 @@ function EmployeeList() {
                               <FontAwesomeIcon icon={faGear} /> Action
                             </NavLink>
 
-                            <div className="dropdown">
+                            <div className="dropdown position-static">
                               <NavLink
                                 href="#"
                                 className="attendence-edit-btn"

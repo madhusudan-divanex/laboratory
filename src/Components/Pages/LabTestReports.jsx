@@ -5,7 +5,7 @@ import {
   faEye,
 } from "@fortawesome/free-solid-svg-icons";
 import { FaPlusCircle } from "react-icons/fa";
-import { NavLink, useParams } from "react-router-dom";
+import { Link, NavLink, useParams } from "react-router-dom";
 import { getSecureApiData, securePostData } from "../../services/api";
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
@@ -134,7 +134,7 @@ function LabTestReports() {
       labId: userId,
       patientId: appointmentData.patientId,
       testId: selectedTab,
-      subCatId:selectedTab,
+      subCatId: selectedTab,
       appointmentId: appointMentId,
       component: JSON.stringify(components),
       comment: allComments[selectedTab] || ""
@@ -335,7 +335,6 @@ function LabTestReports() {
                                     <th>Unit</th>
                                     <th>Reference Range</th>
                                     <th>Result</th>
-                                    <th>Status</th>
                                   </tr>
                                 </thead>
 
@@ -343,7 +342,7 @@ function LabTestReports() {
                                   {item.component.map((c, i) => (
                                     <React.Fragment key={i}>
                                       <tr>
-                                        <td colSpan={5}>
+                                        <td colSpan={4}>
                                           <span className="reprt-title text-capitalize">
                                             {c.title}
                                           </span>
@@ -353,80 +352,55 @@ function LabTestReports() {
                                       <tr >
                                         <td>{c.name}</td>
                                         <td>{c.unit}</td>
-                                        <td>{c.referenceRange}</td>
+                                        <td>{c?.optionType == 'text' ? `${c?.minRange}-${c?.maxRange}` : 'Positive-Negative'}</td>
 
                                         <td>
 
                                           <div className="custom-frm-bx mb-0">
 
-                                          
 
-                                          {c?.optionType == 'text' ? <input
-                                            type="text"
-                                            className="form-control patient-frm-control"
-                                            placeholder="50"
-                                            value={allComponentResults[selectedTab]?.[i]?.result || ""}
-                                            onChange={(e) =>
-                                              setAllComponentResults(prev => ({
-                                                ...prev,
-                                                [selectedTab]: {
-                                                  ...prev[selectedTab],
-                                                  [i]: {
-                                                    ...prev[selectedTab]?.[i],
-                                                    result: e.target.value
-                                                  }
-                                                }
-                                              }))
-                                            }
-                                          /> 
-                                          
-                                          :
-                                            <select name="" id="" className="form-select"
-                                              value={allComponentResults[item?._id]?.[i]?.result || ""}
+
+                                            {c?.optionType == 'text' ? <input
+                                              type="text"
+                                              className="form-control patient-frm-control"
+                                              placeholder="50"
+                                              value={allComponentResults[selectedTab]?.[i]?.result || ""}
                                               onChange={(e) =>
                                                 setAllComponentResults(prev => ({
                                                   ...prev,
-                                                  [item?._id]: {
-                                                    ...prev[item?._id],
+                                                  [selectedTab]: {
+                                                    ...prev[selectedTab],
                                                     [i]: {
-                                                      ...prev[item?._id]?.[i],
+                                                      ...prev[selectedTab]?.[i],
                                                       result: e.target.value
                                                     }
                                                   }
                                                 }))
-                                              }>
-                                              <option value="">Select</option>
-                                              {c?.result?.map((r) =>
-                                                // {console.log(r?.value)}
-                                                <option value={r.value}>{r.value}</option>)}
-                                            </select>
-                                          }
-                                          </div>
-                                        </td>
+                                              }
+                                            />
 
-                                        <td>
-                                         <div className="custom-frm-bx mb-0">
-                                           <select
-                                            className="form-select patient-frm-control"
-                                            value={allComponentResults[selectedTab]?.[i]?.status || ""}
-                                            onChange={(e) =>
-                                              setAllComponentResults(prev => ({
-                                                ...prev,
-                                                [selectedTab]: {
-                                                  ...prev[selectedTab],
-                                                  [i]: {
-                                                    ...prev[selectedTab]?.[i],
-                                                    status: e.target.value
-                                                  }
-                                                }
-                                              }))
+                                              :
+                                              <select
+                                                className="form-select patient-frm-control"
+                                                value={allComponentResults[selectedTab]?.[i]?.result || ""}
+                                                onChange={(e) =>
+                                                  setAllComponentResults(prev => ({
+                                                    ...prev,
+                                                    [selectedTab]: {
+                                                      ...prev[selectedTab],
+                                                      [i]: {
+                                                        ...prev[selectedTab]?.[i],
+                                                        result: e.target.value
+                                                      }
+                                                    }
+                                                  }))
+                                                }>
+                                                <option value="">---Select status---</option>
+                                                <option value="Positive">Positive</option>
+                                                <option value="Negative">Negative</option>
+                                              </select>
                                             }
-                                          >
-                                            <option value="">---Select status---</option>
-                                            <option value="Positive">Positive</option>
-                                            <option value="Negative">Negative</option>
-                                          </select>
-                                         </div>
+                                          </div>
                                         </td>
                                       </tr>
                                       {/* NOTE FULL ROW */}
@@ -468,6 +442,9 @@ function LabTestReports() {
 
             </div>
           </div>
+        </div>
+        <div className="text-end mt-3">
+          <Link to={-1} className="nw-thm-btn outline rounded-3">Go Back</Link>
         </div>
       </div> :
         <div className="mb-3" ref={reportRef}>
@@ -524,7 +501,6 @@ function LabTestReports() {
                       <th>Unit</th>
                       <th>Reference</th>
                       <th>Result</th>
-                      <th>Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -535,9 +511,8 @@ function LabTestReports() {
                           <tr key={test._id + index}>
                             <td>{test.shortName} - {cmp.name}</td>
                             <td>{cmp.unit || "-"}</td>
-                            <td>{cmp.referenceRange || "-"}</td>
+                            <td>{`${cmp.minRange}-${cmp?.maxRange}` || "-"}</td>
                             <td>{resultObj.result || "-"}</td>
-                            <td className="text-capitalize">{resultObj.status || "-"}</td>
                           </tr>
                         );
                       })

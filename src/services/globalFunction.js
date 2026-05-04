@@ -1,17 +1,20 @@
-const calculateAge = (dob) => {
-        if (!dob) return "";
+const calculateAge = (dob, asOfDate = new Date()) => {
+  if (!dob) return "";
 
-        const birthDate = new Date(dob);
-        const today = new Date();
+  const birthDate = new Date(dob);
+  const refDate = new Date(asOfDate);
 
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        const dayDiff = today.getDate() - birthDate.getDate();
-        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-            age--; // haven't had birthday yet this year
-        }
-        return age;
-    };
+  let age = refDate.getFullYear() - birthDate.getFullYear();
+
+  const monthDiff = refDate.getMonth() - birthDate.getMonth();
+  const dayDiff = refDate.getDate() - birthDate.getDate();
+
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    age--;
+  }
+
+  return age;
+};
 const saveFcmToken = async () => {
     try {
       const permission = await Notification.requestPermission();

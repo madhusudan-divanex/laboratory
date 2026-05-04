@@ -9,6 +9,7 @@ import html2pdf from "html2pdf.js";
 import html2canvas from "html2canvas";
 import Barcode from "react-barcode";
 import Loader from "../Layouts/Loader";
+import LabReportPdf from "../Template/LabReportPdf";
 
 function ReportView() {
   const params = useParams()
@@ -23,7 +24,7 @@ function ReportView() {
   const [allComments, setAllComments] = useState({});
   const [reportMeta, setReportMeta] = useState({});
   const [fullReportData, setFullReportData] = useState()
-
+  const [pdfLoading,setPdfLoading]=useState(false)
   const { profiles, labPerson, labAddress, labImg,
     rating, avgRating, labLicense, isRequest, isOwner, permissions } = useSelector(state => state.user)
   const [appointmentData, setAppointmentData] = useState({})
@@ -218,7 +219,7 @@ function ReportView() {
                       <h5 className="first_para fw-700 fz-20 mb-0">Final Diagnostic Report</h5>
                     </div>
                     <div>
-                      <button className="print-btn" onClick={handleDownload}> <FontAwesomeIcon icon={faDownload} /> Download PDF</button>
+                      <button className="print-btn" disabled={pdfLoading} onClick={()=>setPdfLoading(true)}> <FontAwesomeIcon icon={faDownload} /> {pdfLoading?'Downloading...':'Download'} PDF</button>
                     </div>
                   </div>
 
@@ -266,7 +267,7 @@ function ReportView() {
                             <th>Unit</th>
                             <th>Reference</th>
                             <th>Result</th>
-                            <th>Status</th>
+                            {/* <th>Status</th> */}
                           </tr>
                         </thead>
                         <tbody>
@@ -286,13 +287,13 @@ function ReportView() {
                                   <tr>
                                     <td>{test.shortName} - {cmp.name}</td>
                                     <td>{cmp.unit || "-"}</td>
-                                    <td>{cmp.referenceRange || "-"}</td>
+                                    <td>{cmp?.optionType=='text'? `${cmp.minRange}-${cmp?.maxRange}` : "Positve-Negative"}</td>
                                     <td>
                                       {resultObj.result}
                                     </td>
-                                    <td className="text-capitalize">
+                                    {/* <td className="text-capitalize">
                                       {resultObj.status || "-"}
-                                    </td>
+                                    </td> */}
                                   </tr>
 
                                   {/* NOTE FULL ROW */}
@@ -345,6 +346,9 @@ function ReportView() {
 
 
             </div>
+          </div>
+          <div className="d-none">
+            <LabReportPdf appointmentId={appointmentId} pdfLoading={pdfLoading} endLoading={()=>setPdfLoading(false)}/>
           </div>
           <div className="text-end">
             <Link to={-1} className="nw-thm-btn rounded-3 outline">Go Back</Link>

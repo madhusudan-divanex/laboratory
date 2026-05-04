@@ -27,12 +27,12 @@ function LeftSidebar() {
   const { pathname } = useLocation();
 
   const {
-    profiles,allowEdit,permissions,user,staffData,staffUser,
-    labPerson, empData, isOwner,customId
+    profiles, allowEdit, permissions, user, staffData, staffUser,
+    labPerson, empData, isOwner, customId
   } = useSelector((state) => state.user);
-
+  console.log(isOwner);
   useEffect(() => {
-    
+
     dispatch(fetchUserDetail());
     if (!isOwner) {
       dispatch(fetchEmpDetail(localStorage.getItem('staffId')))
@@ -124,7 +124,7 @@ function LeftSidebar() {
                 </NavLink>
               </li>
 
-              {(isOwner || permissions?.chat) &&<li className="nav-item">
+              {(isOwner || permissions?.chat) && <li className="nav-item">
                 <NavLink to="/chat" className={active("/chat")}>
                   <FontAwesomeIcon icon={faMessage} /> Chat
                 </NavLink>
@@ -146,50 +146,50 @@ function LeftSidebar() {
                 </NavLink>
               </li>
 
-              {isOwner &&<li className="nav-item">
+              {isOwner && <li className="nav-item">
                 <NavLink to="/employee-list" className={active("/employee-list")}>
                   <FontAwesomeIcon icon={faUsers} /> Employees/Doctor
                 </NavLink>
               </li>}
-              {isOwner &&<li className="nav-item">
+              {isOwner && <li className="nav-item">
                 <NavLink to="/department" className={active("/department")}>
                   <FontAwesomeIcon icon={faBuilding} /> Department
                 </NavLink>
               </li>}
 
-              {isOwner &&<li className="nav-item">
+              {isOwner && <li className="nav-item">
                 <NavLink to="/permission" className={active("/permission")}>
                   <FontAwesomeIcon icon={faKey} /> Permission
                 </NavLink>
               </li>}
 
-              {isOwner?
-              <li className="nav-item">
-                <NavLink
-                  to={allowEdit ? "/approve-profile" : "/profile"}
-                  className={active(
-                    allowEdit
-                      ? "/approve-profile"
-                      : "/profile"
-                  )}
-                >
-                  <FontAwesomeIcon icon={faUserCircle} /> Profile
-                </NavLink>
-              </li>
-              :<li className="nav-item">
-                <NavLink
-                  to={`/view-employee/${staffUser?.name}/${staffUser?.nh12}`}
-                  className={active(
-                    allowEdit
-                      ? "/approve-profile"
-                      : "/profile"
-                  )}
-                >
-                  <FontAwesomeIcon icon={faUserCircle} />Profile
-                </NavLink>
-              </li>}
+              {isOwner ?
+                <li className="nav-item">
+                  <NavLink
+                    to={allowEdit ? "/approve-profile" : "/profile"}
+                    className={active(
+                      allowEdit
+                        ? "/approve-profile"
+                        : "/profile"
+                    )}
+                  >
+                    <FontAwesomeIcon icon={faUserCircle} /> Profile
+                  </NavLink>
+                </li>
+                : <li className="nav-item">
+                  <NavLink
+                    to={`/view-employee/${staffUser?.name}/${staffUser?.nh12}`}
+                    className={active(
+                      allowEdit
+                        ? "/approve-profile"
+                        : "/profile"
+                    )}
+                  >
+                    <FontAwesomeIcon icon={faUserCircle} />Profile
+                  </NavLink>
+                </li>}
 
-              {isOwner &&<li className="nav-item">
+              {isOwner && <li className="nav-item">
                 <NavLink
                   to="/change-password"
                   className={active("/change-password")}

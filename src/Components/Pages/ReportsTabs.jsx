@@ -23,7 +23,7 @@ import Barcode from "react-barcode";
 import { Tab } from "bootstrap/dist/js/bootstrap.bundle.min";
 import Loader from "../Layouts/Loader";
 import AddPatient from "./AddPatient";
-import { Link, NavLink, useSearchParams } from "react-router-dom";
+import { Link, NavLink, useNavigate, useSearchParams } from "react-router-dom";
 
 function ReportsTabs() {
     const [searchParams] = useSearchParams();
@@ -31,6 +31,7 @@ function ReportsTabs() {
     const invoiceRef = useRef();
     const [hasLRx, setHasLRx] = useState(false);
     const reportRef = useRef()
+    const navigate=useNavigate()
     const compenentRef = useRef()
     const [appointmentId, setAppointmentId] = useState(null)
     const [inputPtId, setInputPtId] = useState(null)
@@ -52,17 +53,24 @@ function ReportsTabs() {
     const [allNames, setAllNames] = useState({});
     const [allReports, setAllReports] = useState({});
     const [reportMeta, setReportMeta] = useState({});
-    const [selectedTest, setSelectedTest] = useState([''])
-    const [allTest, setAllTest] = useState([])
+    const [testOptions, setTestOptions] = useState([])
     const [fullReportData, setFullReportData] = useState()
     const { isOwner, permissions } = useSelector(state => state.user)
     const [isCollected, setIsCollected] = useState(false)
+    const [selectedSubCats, setSelectedSubCats] = useState([])
+    const [selectedCatId, setSelectedCatId] = useState()
+    const [selectedTest, setSelectedTest] = useState([''])       // catId dropdown array
+    const [selections, setSelections] = useState({})
+
     const { profiles, labPerson, labAddress, labImg,
         rating, avgRating, labLicense, isRequest } = useSelector(state => state.user)
     const [isSaving, setIsSaving] = useState(false)
     const fetchAppointmentData = async (e) => {
         if (e?.preventDefault) e.preventDefault();
         const id = appointmentId || searchParams.get("appointmentId")
+        if(id?.length!==6){
+            return toast.error("Please enter a valid appointment id")
+        }
         if (!id) return toast.error("No appointment ID found");
         try {
             setIsSaving(true)
@@ -76,7 +84,6 @@ function ReportsTabs() {
                     return
                 } else {
                     toast.success("Appointment Fetched successfully")
-
                     setTestId(response.data.subCatId)
                     handleBack("profile-tab");
                     setAppointmentData(response.data)
@@ -96,7 +103,7 @@ function ReportsTabs() {
         try {
             const response = await getSecureApiData(`lab/test/${userId}`);
             if (response.success) {
-                setAllTest(response.data)
+                setTestOptions(response.data)
             } else {
                 toast.error(response.message)
             }
@@ -134,7 +141,7 @@ function ReportsTabs() {
     }, [appointmentData])
     const fetchTestReport = async (testId) => {
         try {
-            const payload = { subCatId:testId, appointmentId: appointmentData?._id };
+            const payload = { subCatId: testId, appointmentId: appointmentData?._id };
             const response = await securePostData('lab/test-report-data', payload);
 
             if (response.success && response.data) {
@@ -162,7 +169,7 @@ function ReportsTabs() {
     useEffect(() => {
         const fetchTestsOneByOne = async () => {
             if (testId.length === 0) return;
-            const allTests = [];
+            const testOptionss = [];
 
             for (const id of testId) {
                 try {
@@ -195,7 +202,7 @@ function ReportsTabs() {
                             setAllNames(prev => ({ ...prev, [test._id]: "" }));
                         }
 
-                        allTests.push(test);
+                        testOptionss.push(test);
                     } else {
                         // toast.error(response.message);
                     }
@@ -204,7 +211,7 @@ function ReportsTabs() {
                 }
             }
 
-            setTestData(allTests);
+            setTestData(testOptionss);
         };
 
         fetchTestsOneByOne();
@@ -278,7 +285,7 @@ function ReportsTabs() {
                 if (response.success) {
                     const res = await getSecureApiData(`lab/appointment-data/${appointmentId}`)
                     if (res.success) {
-                        setTestId(res.data.testId)
+                        setTestId(res.data.subCatId)
                         setAppointmentData(res.data)
                     } else {
                         toast.error(res.message)
@@ -299,7 +306,7 @@ function ReportsTabs() {
                 if (response.success) {
                     const res = await getSecureApiData(`lab/appointment-data/${appointmentId}`)
                     if (res.success) {
-                        setTestId(res.data.testId)
+                        setTestId(res.data.subCatId)
                         setAppointmentData(res.data)
                     } else {
                         toast.error(res.message)
@@ -349,17 +356,17 @@ function ReportsTabs() {
         if (selectedTest[0] === '') {
             return
         }
-        const selectedTestsDetails = allTest.filter((test) =>
-            selectedTest.includes(test._id)
-        );
-        const totalFee = selectedTestsDetails.reduce(
-            (acc, item) => acc + Number(item?.price),
-            0
-        );
+        const testId = Object.keys(selections).filter(id => id)
+        const subCatId = Object.values(selections).flat()
+
+        if (testId.length === 0 || subCatId.length === 0) {
+            toast.error('Please select at least one test')
+            return
+        }
         const data = {
             patientId: patData?.userId, status: 'approved',
-            testId: selectedTest,
-            date: new Date(), labId: userId, fees: totalFee
+            testId, subCatId,
+            date: new Date(), labId: userId,
         }
         try {
             const response = await securePostData(`appointment/lab`, data)
@@ -371,7 +378,7 @@ function ReportsTabs() {
                 const res = await getSecureApiData(`lab/appointment-data/${appId}`)
 
 
-                setTestId(res.data.testId)
+                setTestId(res.data.subCatId)
                 handleBack("profile-tab");
                 setAppointmentData(res.data)
 
@@ -437,6 +444,7 @@ function ReportsTabs() {
                 toast.error("Failed to save report.");
             } finally {
                 setLoading(false);
+                navigate(`/report-view/${appointmentData?._id}`)
             }
         }
         handleBack("person-tab");
@@ -457,17 +465,29 @@ function ReportsTabs() {
     }
 
     const handleAddTest = () => {
-        setSelectedTest([...selectedTest, ""]);
-    };
-    const handleRemoveTest = (index) => {
-        const updatedTests = selectedTest.filter((_, i) => i !== index);
-        setSelectedTest(updatedTests);
-    };
-    const handleChange = (index, value) => {
-        const updatedTests = [...selectedTest];
-        updatedTests[index] = value;
-        setSelectedTest(updatedTests);
-    };
+        setSelectedTest(prev => [...prev, ''])
+    }
+    const handleRemoveTest = (key) => {
+        const catId = selectedTest[key]
+        setSelectedTest(prev => prev.filter((_, i) => i !== key))
+        setSelections(prev => {
+            const updated = { ...prev }
+            if (catId) delete updated[catId]
+            return updated
+        })
+    }
+    const handleChange = (key, newCatId) => {
+        const oldCatId = selectedTest[key]
+        setSelectedTest(prev => prev.map((id, i) => i === key ? newCatId : id))
+
+        // Old category ki selections hata do, nai category ke liye empty init karo
+        setSelections(prev => {
+            const updated = { ...prev }
+            if (oldCatId) delete updated[oldCatId]
+            if (newCatId) updated[newCatId] = []
+            return updated
+        })
+    }
     const handleBack = (name) => {
         // e.preventDefault(); // prevent page reload
         const tabTrigger = document.getElementById(name); // the tab button for "contact"
@@ -534,6 +554,36 @@ function ReportsTabs() {
             fetchDoctorData()
         }
     }, [inputDoctorId])
+    const selectedLabTest = testOptions.find(t => t._id === selectedCatId)
+
+    // Sirf active subCats dikhao
+    const activeSubCats = selectedLabTest?.subCatData?.filter(
+        s => s.status === 'active'
+    ) || []
+    const allSelected =
+        activeSubCats.length > 0 &&
+        activeSubCats.every(s => selectedSubCats.includes(s.subCat._id))
+    const handleCheckbox = (catId, subCatId) => {
+        setSelections(prev => {
+            const current = prev[catId] || []
+            return {
+                ...prev,
+                [catId]: current.includes(subCatId)
+                    ? current.filter(id => id !== subCatId)
+                    : [...current, subCatId]
+            }
+        })
+    }
+
+    // Select All — per category
+    const handleSelectAll = (catId, activeSubCats, checked) => {
+        const ids = activeSubCats.map(s => s.subCat._id)
+        setSelections(prev => ({
+            ...prev,
+            [catId]: checked ? ids : []
+        }))
+    }
+
     return (
         <>
             {loading ? <Loader />
@@ -818,58 +868,130 @@ function ReportsTabs() {
 
                                                                         </div>
                                                                     </div> */}
-                                                                            {selectedTest?.map((item, key) => (
-                                                                                <div className="row">
-                                                                                    <div className="col-lg-12" key={key}>
-                                                                                        <div className="custom-frm-bx">
-                                                                                            <label htmlFor="">Add Lab Test</label>
-                                                                                            <div className="d-flex align-items-center gap-2">
-                                                                                                <select
-                                                                                                    value={item}
-                                                                                                    required
-                                                                                                    onChange={(e) => handleChange(key, e.target.value)}
-                                                                                                    className="form-select"
-                                                                                                >
-                                                                                                    <option value="">Select Test</option>
-                                                                                                    {allTest
-                                                                                                        ?.filter(
-                                                                                                            (t) =>
-                                                                                                                // Allow tests that are not already selected OR the current one (to allow reselecting it)
-                                                                                                                !selectedTest.includes(t._id) || t._id === item
-                                                                                                        )
-                                                                                                        .map((t) => (
-                                                                                                            <option key={t._id} value={t._id}>
-                                                                                                                {t.category?.name}
-                                                                                                            </option>
-                                                                                                        ))}
-                                                                                                </select>
+                                                                            {selectedTest?.map((catId, key) => {
+                                                                                // Is row ka selected test object
+                                                                                const selectedLabTest = testOptions.find(t => t._id === catId)
 
-                                                                                                <button
-                                                                                                    className="text-black"
-                                                                                                    disabled={selectedTest?.length === 1}
-                                                                                                    onClick={() => handleRemoveTest(key)}
-                                                                                                >
-                                                                                                    <FontAwesomeIcon icon={faTrash} />
-                                                                                                </button>
+                                                                                // Sirf active subCats
+                                                                                const activeSubCats = selectedLabTest?.subCatData?.filter(
+                                                                                    s => s.status === 'active'
+                                                                                ) || []
+
+                                                                                // Is category ke selected subCats
+                                                                                const currentSubCats = selections[catId] || []
+
+                                                                                const allSelected =
+                                                                                    activeSubCats.length > 0 &&
+                                                                                    activeSubCats.every(s => currentSubCats.includes(s.subCat._id))
+
+                                                                                return (
+                                                                                    <div className="row" key={key}>
+                                                                                        <div className="col-lg-12">
+                                                                                            <div className="custom-frm-bx">
+                                                                                                <label>Add Lab Test</label>
+                                                                                                <div className="d-flex align-items-center gap-2">
+
+                                                                                                    {/* Category Dropdown */}
+                                                                                                    <select
+                                                                                                        value={catId}
+                                                                                                        required
+                                                                                                        onChange={(e) => handleChange(key, e.target.value)}
+                                                                                                        className="form-select"
+                                                                                                    >
+                                                                                                        <option value="">Select Test</option>
+                                                                                                        {testOptions
+                                                                                                            ?.filter(t =>
+                                                                                                                // Jo already select hain unhe hide karo — except current row ka
+                                                                                                                !selectedTest.includes(t._id) || t._id === catId
+                                                                                                            )
+                                                                                                            .map(t => (
+                                                                                                                <option key={t._id} value={t._id}>
+                                                                                                                    {t.category?.name}
+                                                                                                                </option>
+                                                                                                            ))}
+                                                                                                    </select>
+
+                                                                                                    <button
+                                                                                                        type="button"
+                                                                                                        className="text-black"
+                                                                                                        disabled={selectedTest?.length === 1}
+                                                                                                        onClick={() => handleRemoveTest(key)}
+                                                                                                    >
+                                                                                                        <FontAwesomeIcon icon={faTrash} />
+                                                                                                    </button>
+                                                                                                </div>
                                                                                             </div>
                                                                                         </div>
+
+                                                                                        {/* SubCat Checkboxes — sirf agar category select ho */}
+                                                                                        {selectedLabTest && (
+                                                                                            <div className="col-lg-12">
+                                                                                                <div className="custom-frm-bx mb-3">
+                                                                                                    <label>Select Tests</label>
+
+                                                                                                    {activeSubCats.length > 0 ? (
+                                                                                                        <div
+                                                                                                            className="border rounded p-3"
+                                                                                                            style={{ maxHeight: '260px', overflowY: 'auto' }}
+                                                                                                        >
+                                                                                                            {/* Select All */}
+                                                                                                            <div className="form-check custom-check mb-2 border-bottom pb-2">
+                                                                                                                <input
+                                                                                                                    className="form-check-input"
+                                                                                                                    type="checkbox"
+                                                                                                                    id={`selectAll-${catId}`}
+                                                                                                                    checked={allSelected}
+                                                                                                                    onChange={(e) => handleSelectAll(catId, activeSubCats, e.target.checked)}
+                                                                                                                />
+                                                                                                                <label
+                                                                                                                    className="form-check-label fw-semibold d-flex justify-content-between"
+                                                                                                                    htmlFor={`selectAll-${catId}`}
+                                                                                                                >
+                                                                                                                    <span>Select All</span>
+                                                                                                                    {allSelected && (
+                                                                                                                        <span className="text-muted">₹ {selectedLabTest?.totalAmount}</span>
+                                                                                                                    )}
+                                                                                                                </label>
+                                                                                                            </div>
+
+                                                                                                            {/* Individual SubCats */}
+                                                                                                            {activeSubCats.map(s => (
+                                                                                                                <div className="form-check custom-check mb-2" key={s.subCat._id}>
+                                                                                                                    <input
+                                                                                                                        className="form-check-input"
+                                                                                                                        type="checkbox"
+                                                                                                                        id={`sub-${catId}-${s.subCat._id}`}
+                                                                                                                        checked={currentSubCats.includes(s.subCat._id)}
+                                                                                                                        onChange={() => handleCheckbox(catId, s.subCat._id)}
+                                                                                                                    />
+                                                                                                                    <label
+                                                                                                                        className="form-check-label d-flex justify-content-between"
+                                                                                                                        htmlFor={`sub-${catId}-${s.subCat._id}`}
+                                                                                                                    >
+                                                                                                                        <span>{s.subCat.subCategory}</span>
+                                                                                                                        <span className="text-muted">₹{s.price}</span>
+                                                                                                                    </label>
+                                                                                                                </div>
+                                                                                                            ))}
+                                                                                                        </div>
+                                                                                                    ) : (
+                                                                                                        <p className="text-muted text-center py-2">
+                                                                                                            No active test found in this category
+                                                                                                        </p>
+                                                                                                    )}
+
+                                                                                                    {/* Selected count */}
+                                                                                                    {currentSubCats.length > 0 && (
+                                                                                                        <p className="text-muted small mt-2 mb-0">
+                                                                                                            {currentSubCats.length} test(s) selected
+                                                                                                        </p>
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        )}
                                                                                     </div>
-                                                                                    {/* {<div className="col-md-4">
-                                                                                        <div className="form-check custom-check">
-                                                                                            <input
-                                                                                                className="form-check-input"
-                                                                                                type="checkbox"
-                                                                                                id="reportsList"
-                                                                                                checked={hasLRx}
-                                                                                                onChange={(e) => setHasLRx(e.target.checked)}
-                                                                                            />
-                                                                                            <label className="form-check-label" htmlFor="reportsList">
-                                                                                                Has L-Rx
-                                                                                            </label>
-                                                                                        </div>
-                                                                                    </div>} */}
-                                                                                </div>
-                                                                            ))}
+                                                                                )
+                                                                            })}
                                                                             <div className="d-flex align-items-center gap-2 justify-content-end">
                                                                                 <button onClick={handleAddTest}
                                                                                     type="button"
@@ -930,9 +1052,47 @@ function ReportsTabs() {
                                                             <div className="laboratory-report-bx">
                                                                 <ul className="laboratory-report-list">
                                                                     <li className="laboratory-item"><span>Test</span> <span>Price</span></li>
-                                                                    {appointmentData?.testData?.map((item, key) =>
-                                                                        <li className="laboratory-item border-0" key={key}>
-                                                                            <span>{item?.name}</span> <span>{item?.fees}</span></li>)}
+                                                                    {appointmentData?.testId?.map((test, key) => {
+
+                                                                        // 👉 total available subcategories (from master list)
+                                                                        const totalSubCats = appointmentData?.subCatId?.filter(
+                                                                            s => s?.category?.toString() === test?.category?._id?.toString()
+                                                                        )?.length;
+
+                                                                        // 👉 selected subcategories (from test data)
+                                                                        const selectedSubCats = test?.subCatData?.length;
+                                                                        const isAllSelected = totalSubCats === selectedSubCats;
+
+                                                                        return (
+                                                                            <div key={key}>
+
+                                                                                {/* ✅ Category */}
+                                                                                <li className="laboratory-item border-0">
+                                                                                    <strong>{test?.category?.name}</strong>
+
+                                                                                    {/* 👉 condition */}
+                                                                                    {isAllSelected && (
+                                                                                        <span>₹ {test?.totalAmount}</span>
+                                                                                    )}
+                                                                                </li>
+
+                                                                                {/* ✅ Subcategories */}
+                                                                                {test?.subCatData?.map((sub, i) => {
+                                                                                    const subCategoryData = appointmentData?.subCatId?.find(
+                                                                                        s => s?._id?.toString() === sub?.subCat?.toString()
+                                                                                    );
+
+                                                                                    return (
+                                                                                        <li className="laboratory-item border-0 ps-3" key={i}>
+                                                                                            <span>{subCategoryData?.subCategory}</span>
+                                                                                            {!isAllSelected && <span>₹ {sub?.price}</span>}
+                                                                                        </li>
+                                                                                    );
+                                                                                })}
+
+                                                                            </div>
+                                                                        );
+                                                                    })}
                                                                 </ul>
                                                                 <div className="lab-amount-bx">
                                                                     <ul className="lab-amount-list">
@@ -1046,7 +1206,7 @@ function ReportsTabs() {
 
                                                                             <div>
                                                                                 <h6>Appointment ID </h6>
-                                                                                <p>OID-{appointmentData?.customId}</p>
+                                                                                <p>{appointmentData?.customId}</p>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -1235,7 +1395,6 @@ function ReportsTabs() {
                                                                                     <th>Unit</th>
                                                                                     <th>Reference</th>
                                                                                     <th>Result</th>
-                                                                                    <th>Status</th>
                                                                                 </tr>
                                                                             </thead>
                                                                             <tbody>
@@ -1244,7 +1403,7 @@ function ReportsTabs() {
 
                                                                                         {/* Department Row */}
                                                                                         <tr>
-                                                                                            <td colSpan="5" className="fw-bold">
+                                                                                            <td colSpan="4" className="fw-bold">
                                                                                                 {item?.labDept?.departmentName}
                                                                                             </td>
                                                                                         </tr>
@@ -1266,7 +1425,7 @@ function ReportsTabs() {
                                                                                                             {item?.shortName} - {c?.title}
                                                                                                         </td>
                                                                                                         <td>{c?.unit}</td>
-                                                                                                        <td>{c?.referenceRange}</td>
+                                                                                                        <td>{c?.optionType === 'text' ? `${c?.minRange}-${c?.maxRange}` : 'Positive-Negative'}</td>
 
                                                                                                         {/* Result Input */}
                                                                                                         <td>
@@ -1307,49 +1466,18 @@ function ReportsTabs() {
                                                                                                                             }))
                                                                                                                         }
                                                                                                                     >
-                                                                                                                        <option value="">Select</option>
-                                                                                                                        {c?.result?.map((r) => (
-                                                                                                                            <option key={r.value} value={r.value}>
-                                                                                                                                {r.value}
-                                                                                                                            </option>
-                                                                                                                        ))}
+                                                                                                                        <option value="">---Select status---</option>
+                                                                                                                        <option value="Positive">Positive</option>
+                                                                                                                        <option value="Negative">Negative</option>
                                                                                                                     </select>
                                                                                                                 )}
-                                                                                                            </div>
-                                                                                                        </td>
-
-                                                                                                        {/* Status */}
-                                                                                                        <td>
-                                                                                                            <div className="custom-frm-bx ms-2 mb-0">
-                                                                                                                <select
-                                                                                                                    className="form-select"
-                                                                                                                    value={
-                                                                                                                        allComponentResults[item?._id]?.[i]?.status || ""
-                                                                                                                    }
-                                                                                                                    onChange={(e) =>
-                                                                                                                        setAllComponentResults((prev) => ({
-                                                                                                                            ...prev,
-                                                                                                                            [item?._id]: {
-                                                                                                                                ...prev[item?._id],
-                                                                                                                                [i]: {
-                                                                                                                                    ...prev[item?._id]?.[i],
-                                                                                                                                    status: e.target.value,
-                                                                                                                                },
-                                                                                                                            },
-                                                                                                                        }))
-                                                                                                                    }
-                                                                                                                >
-                                                                                                                    <option value="">Select</option>
-                                                                                                                    <option value="Positive">Positive</option>
-                                                                                                                    <option value="Negative">Negative</option>
-                                                                                                                </select>
                                                                                                             </div>
                                                                                                         </td>
                                                                                                     </tr>
 
                                                                                                     {/* Note Row */}
                                                                                                     <tr>
-                                                                                                        <td colSpan="5">
+                                                                                                        <td colSpan="4">
                                                                                                             <strong>Note:</strong> {selectedOption || "-"}
                                                                                                         </td>
                                                                                                     </tr>
@@ -1563,7 +1691,6 @@ function ReportsTabs() {
                                                                                     <th>Unit</th>
                                                                                     <th>Reference</th>
                                                                                     <th>Result</th>
-                                                                                    <th>Status</th>
                                                                                 </tr>
                                                                             </thead>
                                                                             <tbody>
@@ -1577,11 +1704,14 @@ function ReportsTabs() {
                                                                                                 <tr key={test._id + index}>
                                                                                                     <td>{test.shortName} - {cmp.name}</td>
                                                                                                     <td>{cmp.unit || "-"}</td>
-                                                                                                    <td>{cmp.referenceRange || "-"}</td>
+                                                                                                    <td>{cmp?.optionType === 'text' ? `${cmp?.minRange}-${cmp?.maxRange}` : 'Positive-Negative'}</td>
                                                                                                     <td>{resultObj.result || "-"}</td>
-                                                                                                    <td className="text-capitalize">{resultObj.status || "-"}</td>
                                                                                                 </tr>
-                                                                                                <tr><span className="fw-600">Note</span>{selectedOption || "-"}</tr>
+                                                                                                <tr>
+                                                                                                    <td colSpan="4">
+                                                                                                        <span className="fw-600">Note: </span>{selectedOption || "-"}
+                                                                                                    </td>
+                                                                                                </tr>
                                                                                             </>
                                                                                         );
                                                                                     })

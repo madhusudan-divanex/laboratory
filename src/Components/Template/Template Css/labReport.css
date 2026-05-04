@@ -1,0 +1,104 @@
+.report-wrapper {
+  min-height: 100vh;
+}
+
+.report-a4 {
+  width: 794px;
+  /* ❌ min-height: 1123px hataya — yahi blank page ka kaaran tha */
+  /* ❌ overflow: hidden hataya — yahi data cut ka kaaran tha */
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.logo img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+/* WATERMARK */
+.watermark {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: rgba(15, 157, 154, 0.05);
+  border-radius: 50%;
+  top: 40%;
+  left: 25%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-teal {
+  background-color: #0F9D9A;
+}
+
+.report-table td,
+.report-table th {
+  padding: 8px 6px;
+}
+
+.section-title {
+  font-weight: 600;
+  padding-top: 12px;
+  color: #444;
+}
+
+.instruction-box {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px;
+  background: #fafafa;
+}
+
+.footer-bar {
+  background: #0F9D9A;
+}
+
+/* ── PDF / PRINT PAGE BREAK RULES ─────────────────────────────────────────── */
+@media print {
+  body {
+    background: white;
+    margin: 0;
+    padding: 0;
+  }
+
+  .report-wrapper {
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  .report-a4 {
+    box-shadow: none;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  /* Table rows should not break in the middle */
+  .report-table tr {
+    page-break-inside: avoid;
+  }
+
+  /* Each test report block — avoid breaking inside */
+  .report-a4 > .px-4.py-3.border-bottom {
+    page-break-inside: avoid;
+  }
+
+  /* Instructions + signatures — keep together */
+  .instruction-box {
+    page-break-inside: avoid;
+  }
+
+  /* Footer always at bottom, never orphaned on a blank page */
+  .footer-bar {
+    page-break-before: avoid;
+  }
+
+  /* Hide browser print headers/footers */
+  @page {
+    margin: 0;
+    size: A4 portrait;
+  }
+}

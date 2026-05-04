@@ -11,19 +11,21 @@ import Loader from "../Layouts/Loader";
 function AddAppointment() {
     const navigate = useNavigate()
     const userId = localStorage.getItem('userId')
-    const [allTest, setAllTest] = useState([])
+    const [testOptions, setTestOptions] = useState([])
     const [patientId, setPatientId] = useState()
     const [aptDate, setAptDate] = useState({ date: null, time: null })
     const [selectedTest, setSelectedTest] = useState([''])
     const [ptName, setPtName] = useState('')
     const [loading, setLoading] = useState(false);
     const [allPatient, setAllPatient] = useState([])
+    const [selectedSubCats, setSelectedSubCats] = useState([])
+    const [selectedCatId, setSelectedCatId] = useState()
     const [userData, setUserData] = useState()
     const fetchLabTest = async () => {
         try {
-            const response = await getSecureApiData(`lab/test/${userId}`);
+            const response = await getSecureApiData(`lab/test/${userId}?limit=1000`);
             if (response.success) {
-                setAllTest(response.data)
+                setTestOptions(response.data)
             } else {
                 toast.error(response.message)
             }
@@ -69,23 +71,18 @@ function AddAppointment() {
     };
     const appointmentSubmit = async (e) => {
         e.preventDefault()
-        if (selectedTest[0] === '') {
+        if (selectedSubCats?.length === 0) {
             return
         }
         setLoading(true)
-        const selectedTestsDetails = allTest.filter((test) =>
-            selectedTest.includes(test._id)
-        );
-        const totalFee = selectedTestsDetails.reduce(
-            (acc, item) => acc + Number(item?.price),
-            0
-        );
+
         const data = {
             patientId: userData?._id, status: 'approved',
-            testId: selectedTest,
+            testId: [selectedCatId],
+            subCatId: selectedSubCats,
             date: aptDate.date && aptDate.time
                 ? new Date(`${aptDate.date}T${aptDate.time}`)
-                : null, labId: userId, fees: totalFee
+                : null, labId: userId,
         }
         try {
             const response = await securePostData(`appointment/lab`, data)
@@ -125,6 +122,27 @@ function AddAppointment() {
             setLoading(false)
         }
     }
+    const selectedLabTest = testOptions.find(t => t._id === selectedCatId)
+
+    // Sirf active subCats dikhao
+    const activeSubCats = selectedLabTest?.subCatData?.filter(
+        s => s.status === 'active'
+    ) || []
+    const allSelected =
+        activeSubCats.length > 0 &&
+        activeSubCats.every(s => selectedSubCats.includes(s.subCat._id))
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            // Is category ke sabhi active subCat IDs add karo
+            const ids = activeSubCats.map(s => s.subCat._id)
+            setSelectedSubCats(prev => [...new Set([...prev, ...ids])])
+        } else {
+            // Is category ke sabhi active subCat IDs hata do
+            const ids = activeSubCats.map(s => s.subCat._id)
+            setSelectedSubCats(prev => prev.filter(id => !ids.includes(id)))
+        }
+    }
+
     return (
         <>
             {loading ? <Loader />
@@ -252,48 +270,89 @@ function AddAppointment() {
 
 
                                     </div>
-                                    {selectedTest?.map((item, key) => (
-                                        <div className="col-lg-12" key={key}>
-                                            <div className="custom-frm-bx">
-                                                <label htmlFor="">Add Lab Test</label>
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <select
-                                                        value={item}
-                                                        required
-                                                        onChange={(e) => handleChange(key, e.target.value)}
-                                                        className="form-select"
-                                                    >
-                                                        <option value="">Select Test</option>
-                                                        {allTest
-                                                            ?.filter(
-                                                                (t) =>
-                                                                    // Allow tests that are not already selected OR the current one (to allow reselecting it)
-                                                                    !selectedTest.includes(t._id) || t._id === item
-                                                            )
-                                                            .map((t) => (
-                                                                <option key={t._id} value={t._id}>
-                                                                    {t.shortName}
-                                                                </option>
-                                                            ))}
-                                                    </select>
+                                    <div className="custom-frm-bx mb-3">
+                                        <label htmlFor="catSelect">Select Category</label>
+                                        <select
+                                            id="catSelect"
+                                            className="form-select nw-control-frm"
+                                            value={selectedCatId}
+                                            onChange={(e) => {
+                                                setSelectedCatId(e.target.value)
+                                                setSelectedSubCats([])
+                                            }}
+                                        >
+                                            <option value="">--- Select Category ---</option>
+                                            {testOptions.map(test => (
+                                                <option key={test._id} value={test._id}>
+                                                    {test.category?.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
 
-                                                    <button
-                                                        className="text-black"
-                                                        disabled={selectedTest?.length === 1}
-                                                        onClick={() => handleRemoveTest(key)}
-                                                    >
-                                                        <FontAwesomeIcon icon={faTrash} />
-                                                    </button>
+                                    {selectedLabTest && (
+                                        <div className="custom-frm-bx mb-3">
+                                            <label>Select Tests</label>
+
+                                            {activeSubCats.length > 0 ? (
+                                                <div className="border rounded p-3"
+                                                    style={{ maxHeight: '260px', overflowY: 'auto' }}>
+
+                                                    {/* Select All */}
+                                                    <div className="form-check custom-check mb-2 border-bottom pb-2">
+                                                        <input
+                                                            className="form-check-input"
+                                                            type="checkbox"
+                                                            id="selectAll"
+                                                            checked={allSelected}
+                                                            onChange={handleSelectAll}
+                                                        />
+                                                        <label className="form-check-label fw-semibold d-flex justify-content-between" htmlFor="selectAll">
+                                                            <span> Select All </span>
+                                                            {allSelected && <span className="text-muted">₹ {selectedLabTest?.totalAmount} </span>}
+                                                        </label>
+                                                    </div>
+
+                                                    {/* Individual SubCats */}
+                                                    {activeSubCats.map(s => (
+                                                        <div className="form-check custom-check mb-2" key={s.subCat._id}>
+                                                            <input
+                                                                className="form-check-input"
+                                                                type="checkbox"
+                                                                id={`sub-${s.subCat._id}`}
+                                                                checked={selectedSubCats.includes(s.subCat._id)}
+                                                                onChange={() => handleCheckbox(s.subCat._id)}
+                                                            />
+                                                            <label
+                                                                className="form-check-label d-flex justify-content-between"
+                                                                htmlFor={`sub-${s.subCat._id}`}
+                                                            >
+                                                                <span>{s.subCat.subCategory}</span>
+                                                                <span className="text-muted">₹{s.price}</span>
+                                                            </label>
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                            </div>
+                                            ) : (
+                                                <p className="text-muted text-center py-2">
+                                                    No active test found in this category
+                                                </p>
+                                            )}
                                         </div>
-                                    ))}
+                                    )}
 
-                                    <div className="d-flex align-items-center gap-2 justify-content-end">
+                                    {/* Selected count */}
+                                    {selectedSubCats.length > 0 && (
+                                        <p className="text-muted small mb-2">
+                                            {selectedSubCats.length} test(s) selected
+                                        </p>
+                                    )}
+
+                                    {/* <div className="d-flex align-items-center gap-2 justify-content-end">
                                         <button onClick={handleAddTest}
                                             type="button"
                                             className="fz-16 fw-700 " style={{ color: "#34A853" }}><FaSquarePlus /> Add </button>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
                         </div>
