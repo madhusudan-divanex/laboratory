@@ -7,6 +7,7 @@ import { getSecureApiData, updateApiData } from "../../services/api"
 import { toast } from "react-toastify"
 import { useSelector } from "react-redux"
 import Loader from "../Layouts/Loader"
+import LabTestOrder from "../Template/LabTestOrder"
 
 function AppointmentDetails() {
   const params = useParams()
@@ -20,6 +21,7 @@ function AppointmentDetails() {
   const [payData, setPayData] = useState({ appointmentId, paymentStatus: 'due' })
   const [actData, setActData] = useState({ appointmentId, status: '' ,labStaff:''})
   const [loading,setLoading]=useState(false)
+  const [pdfLoading,setPdfLoading]=useState(false)
   const fetchAppointmentData = async () => {
     try {
       setLoading(true)
@@ -111,6 +113,9 @@ function AppointmentDetails() {
                   </nav>
                 </div>
               </div>
+              <div>
+                <button disabled={pdfLoading} className="nw-thm-btn" onClick={()=>setPdfLoading(true)}>{pdfLoading?'Downloading...':'Download'}</button>
+              </div>
             </div>
           </div>
         </form>
@@ -200,6 +205,9 @@ function AppointmentDetails() {
           <Link to={-1} className="nw-thm-btn rounded-3 outline" >
             Go Back
           </Link>
+        </div>
+        <div className="d-none">
+                <LabTestOrder appointmentId={appointmentId} pdfLoading={pdfLoading} endLoading={()=>setPdfLoading(false)}/>
         </div>
       </div>}
 

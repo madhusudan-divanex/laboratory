@@ -82,7 +82,7 @@ function LeftSidebar() {
                 />
                 <div>
                   <h6 className="new_title fw-500 mb-0 fz-18">
-                    {isOwner ? labPerson?.name : staffData?.name}
+                    {isOwner ? user?.name : staffData?.name}
                   </h6>
                   <p>#{isOwner ? user?.nh12 : staffUser?.nh12}</p>
                 </div>
