@@ -21,7 +21,7 @@ function PermissionCheck() {
             editTest: false,
             viewReport: false,
             export: false,
-            billing:false,
+            billing: false,
             editReport: false,
             patientDetails: false,
             appointmentDetails: false,
@@ -80,6 +80,36 @@ function PermissionCheck() {
         }
     };
 
+    const permissionGroups = {
+        reports: [
+            "viewReport",
+            "editReport",
+            "patientDetails",
+            "appointmentDetails",
+            "sendReportMail",
+            "printReport",
+            "addReport",
+            "patientCall",
+            "paymentStatus",
+            "appointmentStatus",
+            "billing"
+        ],
+    };
+    const handleSelectAll = (group, checked) => {
+        const updatedFields = permissionGroups[group].reduce((acc, key) => {
+            acc[key] = checked;
+            return acc;
+        }, {});
+
+        setFormData(prev => ({
+            ...prev,
+            lab: {
+                ...prev.lab,
+                ...updatedFields
+            }
+        }));
+    };
+
     return (
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -100,7 +130,25 @@ function PermissionCheck() {
 
                                 {/* Test Request */}
                                 <div className="permission-check-main-bx">
-                                    <h4><PiTagChevronFill /> Test Request Management</h4>
+                                    <div className="d-flex align-items-center gap-2">
+
+                                        <h4><PiTagChevronFill /> Test Request Management</h4>
+                                        <div className="form-check custom-check">
+                                            <input
+                                                className="form-check-input"
+                                                type="checkbox"
+                                                checked={formData?.lab?.testRequest}
+                                                onChange={(e) => setFormData(prev => ({
+                                                    ...prev,
+                                                    lab: {
+                                                        ...prev.lab,
+                                                        testRequest: e.target?.checked ? true : false
+                                                    }
+                                                }))}
+                                            />
+                                            <label className="form-check-label"> Select All</label>
+                                        </div>
+                                    </div>
                                     <div className="form-check custom-check">
                                         <input
                                             className="form-check-input"
@@ -115,7 +163,26 @@ function PermissionCheck() {
 
                                 {/* Tests */}
                                 <div className="permission-check-main-bx my-4">
-                                    <h4><PiTagChevronFill /> Tests Management</h4>
+                                    <div className="d-flex gap-2 align-items-center">
+                                        <h4><PiTagChevronFill /> Tests Management</h4>
+                                        <div className="form-check custom-check">
+
+                                            <input
+                                                className="form-check-input"
+                                                type="checkbox"
+                                                checked={formData?.lab?.addTest && formData?.lab?.editTest}
+                                                onChange={(e) => setFormData(prev => ({
+                                                    ...prev,
+                                                    lab: {
+                                                        ...prev.lab,
+                                                        addTest: e.target?.checked ? true : false,
+                                                        editTest: e.target?.checked ? true : false
+                                                    }
+                                                }))}
+                                            />
+                                            <label className="form-check-label"> Select All</label>
+                                        </div>
+                                    </div>
                                     <ul className="permision-check-list">
                                         {["addTest", "editTest",].map(key => (
                                             <li key={key}>
@@ -138,7 +205,22 @@ function PermissionCheck() {
 
                                 {/* Reports */}
                                 <div className="permission-check-main-bx my-4">
-                                    <h4><PiTagChevronFill /> Lab Reports Management</h4>
+                                    <div className="d-flex align-items-center gap-2">
+
+                                        <h4><PiTagChevronFill /> Lab Reports Management</h4>
+                                        <div className="form-check custom-check">
+
+                                            <input
+                                                className="form-check-input"
+                                                type="checkbox"
+                                                checked={permissionGroups.reports.every(
+                                                    key => formData.lab[key]
+                                                )}
+                                                onChange={(e) => handleSelectAll("reports", e.target.checked)}
+                                            />
+                                            <label className="form-check-label"> Select All</label>
+                                        </div>
+                                    </div>
                                     <ul className="permision-check-list">
                                         {[
                                             "viewReport",
@@ -172,7 +254,25 @@ function PermissionCheck() {
 
                                 {/* Chat */}
                                 <div className="permission-check-main-bx">
-                                    <h4><PiTagChevronFill /> Chat Management</h4>
+                                    <div className="d-flex align-items-center gap-2">
+
+                                        <h4><PiTagChevronFill /> Chat Management</h4>
+                                        <div className="form-check custom-check">
+                                            <input
+                                                className="form-check-input"
+                                                type="checkbox"
+                                                checked={formData?.lab?.chat}
+                                                onChange={(e) => setFormData(prev => ({
+                                                    ...prev,
+                                                    lab: {
+                                                        ...prev.lab,
+                                                        chat: e.target?.checked ? true : false
+                                                    }
+                                                }))}
+                                            />
+                                            <label className="form-check-label"> Select All</label>
+                                        </div>
+                                    </div>
                                     <div className="form-check custom-check">
                                         <input
                                             className="form-check-input"

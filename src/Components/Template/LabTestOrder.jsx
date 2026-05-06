@@ -348,14 +348,15 @@ export default function LabTestOrder({ appointmentId, pdfLoading, endLoading }) 
                 </tr>
               </thead>
               <tbody>
-                {appointmentData?.subCatId.map((sub, i) => (
+                {appointmentData?.tests?.map((item,key)=>
+                item?.subCat.map((sub, i) => (
                   <tr key={i}>
                     <td>{sub?.subCategory}</td>
                     <td>{sub?.category?.name}</td>
                     <td>{sub?.sample?.map(s=>s?.type).join(', ')}</td>
                     <td>{sub.code}</td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
           </div>

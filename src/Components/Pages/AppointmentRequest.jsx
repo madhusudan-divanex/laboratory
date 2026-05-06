@@ -247,8 +247,8 @@ function AppointmentRequest() {
                                                         <td>
                                                             {/* {item?.testId?.map((item) => item?.shortName + ',')} */}
                                                             <ul className="admin-test-list">
-                                                                {item?.subCatId?.map((test, key) =>
-                                                                    <li className="admin-test-item" key={key}>{test?.subCategory}</li>)}
+                                                                {item?.tests?.map((test, key) =>
+                                                                    <li className="admin-test-item" key={key}>{test?.category?.name}</li>)}
                                                                 {/* <li className="admin-test-item">Haemoglobin</li> */}
                                                             </ul>
 

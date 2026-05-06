@@ -9,6 +9,7 @@ import base_url from "../../../baseUrl";
 import { useDispatch, useSelector } from "react-redux";
 import Barcode from "react-barcode";
 import Loader from "../Layouts/Loader";
+import LabReportPdf from "../Template/LabReportPdf";
 
 function PatientsView() {
     const params = useParams()
@@ -19,7 +20,7 @@ function PatientsView() {
     const [ptData, setPtData] = useState()
     const [isLoading, setIsLoading] = useState(true)
     const dispatch = useDispatch()
-    const { isOwner, permissions ,user} = useSelector(state => state.user)
+    const { isOwner, permissions, user } = useSelector(state => state.user)
     useDispatch(() => {
         dispatch(fetchUserDetail())
     }, [dispatch])
@@ -29,6 +30,7 @@ function PatientsView() {
     const [labAppointments, setLabAppointments] = useState([])
     const [customId, setCustomId] = useState()
     const [labReports, setLabReports] = useState([])
+    const [pdfLoading, setPdfLoading] = useState(false)
     const fetchPatient = async () => {
         try {
             const response = await getSecureApiData(`patient/detail/${patientId}`);
@@ -55,7 +57,7 @@ function PatientsView() {
                 setIsLoading(false)
             } else {
                 toast.error(response.message)
-                navigate('/tests')
+                // navigate('/tests')
             }
         } catch (err) {
             toast.error(err?.response?.data?.message || "Something went wrong");
@@ -292,7 +294,7 @@ function PatientsView() {
                                                                                                     month: "short",
                                                                                                     year: "numeric"
                                                                                                 })}</span></li>
-                                                                                                <li className="ad-info-item"><span className="ad-info-title">Total Amount  :  ${item?.fees}</span></li>
+                                                                                                <li className="ad-info-item"><span className="ad-info-title">Total Amount  :  ₹{item?.fees}</span></li>
                                                                                             </ul>
                                                                                         </td>
 
@@ -333,75 +335,75 @@ function PatientsView() {
                                                                                                     >
                                                                                                     </a>
                                                                                                     <ul
-                                  class="dropdown-menu dropdown-menu-end user-dropdown tble-action-menu "
-                                  aria-labelledby="acticonMenu1"
-                                >
-                                  {item?.status == 'deliver-report' && <li className="drop-item">
-                                    <Link
-                                      class="nw-dropdown-item"
-                                      to={`/lab-test-reports/${item._id}`}
-                                    >
-                                      <img src="/flask-report.png" alt="" />
-                                      Edit Report
-                                    </Link>
-                                  </li>}
-                                  {/* <li className="drop-item">
+                                                                                                        class="dropdown-menu dropdown-menu-end user-dropdown tble-action-menu "
+                                                                                                        aria-labelledby="acticonMenu1"
+                                                                                                    >
+                                                                                                        {item?.status == 'deliver-report' && <li className="drop-item">
+                                                                                                            <Link
+                                                                                                                class="nw-dropdown-item"
+                                                                                                                to={`/lab-test-reports/${item._id}`}
+                                                                                                            >
+                                                                                                                <img src="/flask-report.png" alt="" />
+                                                                                                                Edit Report
+                                                                                                            </Link>
+                                                                                                        </li>}
+                                                                                                        {/* <li className="drop-item">
                                     <Link class="nw-dropdown-item" to={`/patient-view/${item?.patientId?._id}`}>
                                       <img src="/add-user.png" alt="" />
                                       Patient Details
                                     </Link>
                                   </li> */}
-                                  <li className="drop-item">
-                                    <Link class="nw-dropdown-item" to={`/appointment-details/${item?._id}`}>
-                                      <img src="/flask-report.png" alt="" />
-                                      Appointment Details
-                                    </Link>
-                                  </li>
+                                                                                                        <li className="drop-item">
+                                                                                                            <Link class="nw-dropdown-item" to={`/appointment-details/${item?._id}`}>
+                                                                                                                <img src="/flask-report.png" alt="" />
+                                                                                                                Appointment Details
+                                                                                                            </Link>
+                                                                                                        </li>
 
-                                  <li className="drop-item">
-                                    <NavLink to={`/report-tabs?appointmentId=${item?.customId}`} className="nw-dropdown-item" href="#">
-                                      <img src="/reprt-icon.png" alt="" />
-                                      Generate Report
-                                    </NavLink>
-                                  </li>
+                                                                                                        <li className="drop-item">
+                                                                                                            <NavLink to={`/report-tabs?appointmentId=${item?.customId}`} className="nw-dropdown-item" href="#">
+                                                                                                                <img src="/reprt-icon.png" alt="" />
+                                                                                                                Generate Report
+                                                                                                            </NavLink>
+                                                                                                        </li>
 
-                                  <li className="drop-item">
-                                    <NavLink to={`/label/${item?._id}`} className="nw-dropdown-item" href="#">
-                                      <img src="/barcd-icon.png" alt="" />
-                                      Labels
-                                    </NavLink>
-                                  </li>
+                                                                                                        <li className="drop-item">
+                                                                                                            <NavLink to={`/label/${item?._id}`} className="nw-dropdown-item" href="#">
+                                                                                                                <img src="/barcd-icon.png" alt="" />
+                                                                                                                Labels
+                                                                                                            </NavLink>
+                                                                                                        </li>
 
-                                  {item?.status == 'deliver-report' && <li className="drop-item">
-                                    <NavLink to={`/report-view/${item?._id}`} className="nw-dropdown-item" href="#">
-                                      <img src="/file.png" alt="" />
-                                      Report  view
-                                    </NavLink>
-                                  </li>}
-                                  
-                               
-                                  <li className="drop-item">
-                                    <NavLink to={`/new-invoice/${item?._id}`} className="nw-dropdown-item" href="#">
-                                      <img src="/invoices.png" alt="" />
-                                      Invoice
-                                    </NavLink>
-                                  </li>
+                                                                                                        {item?.status == 'deliver-report' && <li className="drop-item">
+                                                                                                            <NavLink to={`/report-view/${item?._id}`} className="nw-dropdown-item" href="#">
+                                                                                                                <img src="/file.png" alt="" />
+                                                                                                                Report  view
+                                                                                                            </NavLink>
+                                                                                                        </li>}
 
-                                  {(item?.status === 'pending-report' || item?.status === 'deliver-report') && <>
-                                    {item?.doctorId && <li className="drop-item">
-                                      <button className="nw-dropdown-item" onClick={() => sendReport(item?._id, item?.doctorId?.email, 'doctor')}>
-                                        <img src="/dc-usr.png" alt="" />
-                                        Send  Report Doctor
-                                      </button>
-                                    </li>}
-                                    <li className="drop-item">
-                                      <button className="nw-dropdown-item" onClick={() => sendReport(item?._id, item?.patientId?.email, 'patient')}>
-                                        <img src="/report-mail.png" alt="" />
-                                        Send  Report Patient
-                                      </button>
-                                    </li>
-                                  </>}
-                                </ul>
+
+                                                                                                        <li className="drop-item">
+                                                                                                            <NavLink to={`/new-invoice/${item?._id}`} className="nw-dropdown-item" href="#">
+                                                                                                                <img src="/invoices.png" alt="" />
+                                                                                                                Invoice
+                                                                                                            </NavLink>
+                                                                                                        </li>
+
+                                                                                                        {(item?.status === 'pending-report' || item?.status === 'deliver-report') && <>
+                                                                                                            {item?.doctorId && <li className="drop-item">
+                                                                                                                <button className="nw-dropdown-item" onClick={() => sendReport(item?._id, item?.doctorId?.email, 'doctor')}>
+                                                                                                                    <img src="/dc-usr.png" alt="" />
+                                                                                                                    Send  Report Doctor
+                                                                                                                </button>
+                                                                                                            </li>}
+                                                                                                            <li className="drop-item">
+                                                                                                                <button className="nw-dropdown-item" onClick={() => sendReport(item?._id, item?.patientId?.email, 'patient')}>
+                                                                                                                    <img src="/report-mail.png" alt="" />
+                                                                                                                    Send  Report Patient
+                                                                                                                </button>
+                                                                                                            </li>
+                                                                                                        </>}
+                                                                                                    </ul>
                                                                                                 </div>
                                                                                             </td>}
                                                                                     </tr>)}
@@ -573,7 +575,7 @@ function PatientsView() {
                                                                                 </div>
 
                                                                                 <div className="d-flex align-items gap-2">
-                                                                                    <button type="button" className="card-sw-btn"><FontAwesomeIcon icon={faPrint} /></button>
+                                                                                    {/* <button type="button" className="card-sw-btn"><FontAwesomeIcon icon={faPrint} /></button> */}
                                                                                     <Link to={`/report-view/${item?.appointmentId?._id}`} type="button" className="card-sw-btn"><FontAwesomeIcon icon={faEye} /></Link>
                                                                                 </div>
                                                                             </div>
@@ -601,16 +603,16 @@ function PatientsView() {
 
                                                                                     <div>
                                                                                         <h6>Appointment ID </h6>
-                                                                                        <p>OID-{item?.appointmentId?.customId}</p>
+                                                                                        <p>{item?.appointmentId?.customId}</p>
                                                                                     </div>
                                                                                 </div>
 
                                                                             </div>
 
                                                                             <div className="text-start mt-3">
-                                                                                <Link to={`/report-view/${item?.appointmentId?._id}`} className="pdf-download-tbn py-2">
+                                                                                <button onClick={()=>setPdfLoading(item?.appointmentId?._id)} className="pdf-download-tbn py-2">
                                                                                     <FontAwesomeIcon icon={faFilePdf} style={{ color: "#EF5350" }} />
-                                                                                    Download Report</Link>
+                                                                                    {pdfLoading==item?.appointmentId?._id?'Downloading...':'Download'} Report</button>
 
                                                                             </div>
 
@@ -950,6 +952,9 @@ function PatientsView() {
                         <Link to={-1} className="nw-thm-btn rounded-3 outline" >
                             Go Back
                         </Link>
+                    </div>
+                    <div className="d-none">
+                        <LabReportPdf appointmentId={pdfLoading} pdfLoading={pdfLoading} endLoading={() => setPdfLoading(false)} />
                     </div>
                     {/* <div className="col-lg-6 col-md-6 col-sm-12 mb-3 d-none" ref={reportRef}>
                     <div className="new-invoice-card">

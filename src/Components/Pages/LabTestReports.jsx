@@ -64,7 +64,8 @@ function LabTestReports() {
 
   useEffect(() => {
     if (appointmentData?.testId) {
-      const ids = appointmentData.subCatId.map(item => item);
+      
+      const ids = appointmentData.tests.flatMap(item => item.subCat)
       setTestId(ids);
     }
     fetchPtData()

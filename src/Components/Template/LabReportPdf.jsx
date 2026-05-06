@@ -39,6 +39,9 @@ const LabReportPdf = ({ appointmentId, pdfLoading, endLoading }) => {
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
   async function fetchAllotmentDetail() {
+    if(!appointmentId){
+      return
+    }
     try {
       const res = await getApiData(
         `api/comman/lab-report/${appointmentId || id}`

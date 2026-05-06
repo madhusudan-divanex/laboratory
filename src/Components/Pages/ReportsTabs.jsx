@@ -31,7 +31,7 @@ function ReportsTabs() {
     const invoiceRef = useRef();
     const [hasLRx, setHasLRx] = useState(false);
     const reportRef = useRef()
-    const navigate=useNavigate()
+    const navigate = useNavigate()
     const compenentRef = useRef()
     const [appointmentId, setAppointmentId] = useState(null)
     const [inputPtId, setInputPtId] = useState(null)
@@ -61,14 +61,14 @@ function ReportsTabs() {
     const [selectedCatId, setSelectedCatId] = useState()
     const [selectedTest, setSelectedTest] = useState([''])       // catId dropdown array
     const [selections, setSelections] = useState({})
-
+    const [manualDoctor, setManualDoctor] = useState()
     const { profiles, labPerson, labAddress, labImg,
         rating, avgRating, labLicense, isRequest } = useSelector(state => state.user)
     const [isSaving, setIsSaving] = useState(false)
     const fetchAppointmentData = async (e) => {
         if (e?.preventDefault) e.preventDefault();
         const id = appointmentId || searchParams.get("appointmentId")
-        if(id?.length!==6){
+        if (id?.length !== 6) {
             return toast.error("Please enter a valid appointment id")
         }
         if (!id) return toast.error("No appointment ID found");
@@ -84,7 +84,10 @@ function ReportsTabs() {
                     return
                 } else {
                     toast.success("Appointment Fetched successfully")
-                    setTestId(response.data.subCatId)
+                    const subCatIds = response.data.tests.flatMap(item =>
+                        item.subCat.map(s => s.subCatId)
+                    )
+                    setTestId(subCatIds)
                     handleBack("profile-tab");
                     setAppointmentData(response.data)
                     setIsCollected(response?.data?.collectionDate ? true : false)
@@ -285,7 +288,10 @@ function ReportsTabs() {
                 if (response.success) {
                     const res = await getSecureApiData(`lab/appointment-data/${appointmentId}`)
                     if (res.success) {
-                        setTestId(res.data.subCatId)
+                        const subCatIds = res.data.tests.flatMap(item =>
+                            item.subCat.map(s => s.subCatId)
+                        )
+                        setTestId(subCatIds)
                         setAppointmentData(res.data)
                     } else {
                         toast.error(res.message)
@@ -306,7 +312,10 @@ function ReportsTabs() {
                 if (response.success) {
                     const res = await getSecureApiData(`lab/appointment-data/${appointmentId}`)
                     if (res.success) {
-                        setTestId(res.data.subCatId)
+                        const subCatIds = res.data.tests.flatMap(item =>
+                            item.subCat.map(s => s.subCatId)
+                        )
+                        setTestId(subCatIds)
                         setAppointmentData(res.data)
                     } else {
                         toast.error(res.message)
@@ -353,41 +362,64 @@ function ReportsTabs() {
 
     const appointmentSubmit = async (e) => {
         e.preventDefault()
-        if (selectedTest[0] === '') {
-            return
-        }
-        const testId = Object.keys(selections).filter(id => id)
+        if (selectedTest[0] === '') return
+
         const subCatId = Object.values(selections).flat()
 
-        if (testId.length === 0 || subCatId.length === 0) {
+        if (selectedTest.length === 0 || subCatId.length === 0) {
             toast.error('Please select at least one test')
             return
         }
-        const data = {
-            patientId: patData?.userId, status: 'approved',
-            testId, subCatId,
-            date: new Date(), labId: userId,
+
+        // ✅ selectedTest mein Test._id hi hai (testOptions ka _id)
+        const testId = selectedTest.filter(Boolean)
+
+        // ✅ tests array — { category: Test.category._id, subCat: [subCatId] }
+        const tests = selectedTest
+            .filter(Boolean)
+            .map(catId => {
+                const testDoc = testOptions.find(t => t._id === catId)
+                return {
+                    category: testDoc?.category?._id || testDoc?.category,
+                    subCat: selections[catId] || []
+                }
+            })
+            .filter(t => t.subCat.length > 0)
+
+        if (tests.length === 0) {
+            toast.error('Please select at least one test')
+            return
         }
+
+        const data = {
+            patientId: patData?.userId,
+            status: 'approved',
+            testId,   // ✅ Test._id array
+            tests,    // ✅ [{ category: category._id, subCat: [subCatId] }]
+            manualDoctor,
+            date: new Date(),
+            labId: userId,
+        }
+
         try {
             const response = await securePostData(`appointment/lab`, data)
             if (response.success) {
                 toast.success("Appointment created successfully")
-                // setTestId(response.data.testId)
-                const appId = response.data._id;
+                const appId = response.data._id
                 setAppointmentId(appId)
+
                 const res = await getSecureApiData(`lab/appointment-data/${appId}`)
-
-
-                setTestId(res.data.subCatId)
-                handleBack("profile-tab");
+                const subCatIds = res.data.tests.flatMap(item =>
+                    item.subCat.map(s => s.subCatId)
+                )
+                setTestId(subCatIds)
+                handleBack("profile-tab")
                 setAppointmentData(res.data)
-
-
             } else {
                 toast.error(response.message)
             }
         } catch (error) {
-
+            toast.error("Something went wrong")
         }
     }
     const handleSave = async (e) => {
@@ -656,18 +688,7 @@ function ReportsTabs() {
                                         </li>
 
 
-                                        <li className="nav-item" role="presentation">
-                                            <a
-                                                className="nav-link"
-                                                disabled={!appointmentData}
-                                                id="collection-tab"
-                                                data-bs-toggle="tab"
-                                                href="#collection"
-                                                role="tab"
-                                            >
-                                                Collection
-                                            </a>
-                                        </li>
+
                                         <li className="nav-item" role="presentation">
                                             <a
                                                 className="nav-link"
@@ -678,6 +699,18 @@ function ReportsTabs() {
                                                 role="tab"
                                             >
                                                 Labels
+                                            </a>
+                                        </li>
+                                        <li className="nav-item" role="presentation">
+                                            <a
+                                                className="nav-link"
+                                                disabled={!appointmentData}
+                                                id="collection-tab"
+                                                data-bs-toggle="tab"
+                                                href="#collection"
+                                                role="tab"
+                                            >
+                                                Collection
                                             </a>
                                         </li>
 
@@ -842,8 +875,8 @@ function ReportsTabs() {
                                                                                     <label>Doctor Name</label>
                                                                                     <input
                                                                                         type="text"
-                                                                                        disabled
-                                                                                        value={doctorData?.name}
+                                                                                        value={manualDoctor}
+                                                                                        onChange={(e) => setManualDoctor(e.target.value)}
                                                                                         className="form-control"
                                                                                         placeholder="Enter Doctor Name"
                                                                                     />
@@ -1049,67 +1082,62 @@ function ReportsTabs() {
                                                                     <p><span className="laboratory-phne">Phone :</span> {appointmentData?.patientId?.patientId?.contactNumber}</p>
                                                                 </div>
                                                             </div>
-                                                            <div className="laboratory-report-bx">
-                                                                <ul className="laboratory-report-list">
-                                                                    <li className="laboratory-item"><span>Test</span> <span>Price</span></li>
-                                                                    {appointmentData?.testId?.map((test, key) => {
+                                                            {/* Total calculate karo */}
+                                                            {(() => {
+                                                                const total = appointmentData?.tests?.reduce((sum, testEntry) => {
+                                                                    if (testEntry?.categoryPrice) {
+                                                                        // Sab selected — categoryPrice use karo
+                                                                        return sum + (testEntry.categoryPrice || 0)
+                                                                    } else {
+                                                                        // Individual subCat prices add karo
+                                                                        return sum + (testEntry?.subCat?.reduce((s, sub) => s + (sub?.subCatPrice || 0), 0) || 0)
+                                                                    }
+                                                                }, 0)
 
-                                                                        // 👉 total available subcategories (from master list)
-                                                                        const totalSubCats = appointmentData?.subCatId?.filter(
-                                                                            s => s?.category?.toString() === test?.category?._id?.toString()
-                                                                        )?.length;
-
-                                                                        // 👉 selected subcategories (from test data)
-                                                                        const selectedSubCats = test?.subCatData?.length;
-                                                                        const isAllSelected = totalSubCats === selectedSubCats;
-
-                                                                        return (
-                                                                            <div key={key}>
-
-                                                                                {/* ✅ Category */}
-                                                                                <li className="laboratory-item border-0">
-                                                                                    <strong>{test?.category?.name}</strong>
-
-                                                                                    {/* 👉 condition */}
-                                                                                    {isAllSelected && (
-                                                                                        <span>₹ {test?.totalAmount}</span>
-                                                                                    )}
-                                                                                </li>
-
-                                                                                {/* ✅ Subcategories */}
-                                                                                {test?.subCatData?.map((sub, i) => {
-                                                                                    const subCategoryData = appointmentData?.subCatId?.find(
-                                                                                        s => s?._id?.toString() === sub?.subCat?.toString()
-                                                                                    );
-
-                                                                                    return (
-                                                                                        <li className="laboratory-item border-0 ps-3" key={i}>
-                                                                                            <span>{subCategoryData?.subCategory}</span>
-                                                                                            {!isAllSelected && <span>₹ {sub?.price}</span>}
+                                                                return (
+                                                                    <div className="laboratory-report-bx">
+                                                                        <ul className="laboratory-report-list">
+                                                                            <li className="laboratory-item"><span>Test</span> <span>Price</span></li>
+                                                                            {appointmentData?.tests?.map((testEntry, key) => {
+                                                                                const isAllSelected = !!testEntry?.categoryPrice
+                                                                                return (
+                                                                                    <div key={key}>
+                                                                                        <li className="laboratory-item border-0">
+                                                                                            <strong>{testEntry?.category?.name}</strong>
+                                                                                            {isAllSelected && <span>₹ {testEntry?.categoryPrice}</span>}
                                                                                         </li>
-                                                                                    );
-                                                                                })}
-
+                                                                                        {testEntry?.subCat?.map((sub, i) => (
+                                                                                            <li className="laboratory-item border-0 ps-3" key={i}>
+                                                                                                <span>{sub?.subCatId?.subCategory}</span>
+                                                                                                {!isAllSelected && <span>₹ {sub?.subCatPrice}</span>}
+                                                                                            </li>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                )
+                                                                            })}
+                                                                        </ul>
+                                                                        <div className="lab-amount-bx">
+                                                                            <ul className="lab-amount-list">
+                                                                                <li className="lab-amount-item">
+                                                                                    Total: <span className="price-title">₹ {total || 0}</span>
+                                                                                </li>
+                                                                            </ul>
+                                                                        </div>
+                                                                        {appointmentData?.paymentStatus === 'due' && (
+                                                                            <div className="text-end mt-5">
+                                                                                <button className="nw-thm-btn rounded-4" onClick={() => appointmentAction('payment', 'paid')}>
+                                                                                    Collect payment
+                                                                                </button>
                                                                             </div>
-                                                                        );
-                                                                    })}
-                                                                </ul>
-                                                                <div className="lab-amount-bx">
-                                                                    <ul className="lab-amount-list">
-                                                                        {/* <li className="lab-amount-item">Subtotal : <span className="price-title">{subtotal}</span></li>
-                                                                        <li className="lab-amount-item lab-divider">GST (5%) :  <span className="price-title">{gst}</span></li> */}
-                                                                        <li className="lab-amount-item">Total :  <span className="price-title">{total}</span></li>
-                                                                    </ul>
-                                                                </div>
-                                                                {appointmentData?.paymentStatus === 'due' && <div className="text-end mt-5" >
-                                                                    <button className="nw-thm-btn rounded-4" onClick={() => appointmentAction('payment', 'paid')}>Collect payment</button>
-                                                                </div>}
-                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )
+                                                            })()}
                                                         </div>}
                                                     </div>
                                                 </div>
                                                 <div className="text-end mt-3" >
-                                                    <button className="nw-thm-btn rounded-4" onClick={(e) => handleBack("collection-tab")}>Next</button>
+                                                    <button className="nw-thm-btn rounded-4" onClick={(e) => handleBack("upload-tab")}>Next</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -1165,7 +1193,7 @@ function ReportsTabs() {
                                                     </div>
                                                 </div>
                                                 <div className="text-end mt-3" >
-                                                    <button className="nw-thm-btn rounded-4" onClick={(e) => handleBack("upload-tab")}>Next</button>
+                                                    <button className="nw-thm-btn rounded-4" onClick={(e) => handleBack("contact-tab")}>Next</button>
                                                 </div>
                                             </div>
                                         </div>}
@@ -1215,7 +1243,7 @@ function ReportsTabs() {
                                                         </div>
                                                     </div>
                                                     <div className="text-end mt-3" >
-                                                        <button className="nw-thm-btn rounded-4" onClick={(e) => handleBack("contact-tab")}>Next</button>
+                                                        <button className="nw-thm-btn rounded-4" onClick={(e) => handleBack("collection-tab")}>Next</button>
                                                     </div>
                                                 </div>}
                                             </div>
@@ -1476,11 +1504,11 @@ function ReportsTabs() {
                                                                                                     </tr>
 
                                                                                                     {/* Note Row */}
-                                                                                                    <tr>
+                                                                                                    {/* <tr>
                                                                                                         <td colSpan="4">
                                                                                                             <strong>Note:</strong> {selectedOption || "-"}
                                                                                                         </td>
-                                                                                                    </tr>
+                                                                                                    </tr> */}
                                                                                                 </React.Fragment>
                                                                                             );
                                                                                         })}
@@ -1707,11 +1735,11 @@ function ReportsTabs() {
                                                                                                     <td>{cmp?.optionType === 'text' ? `${cmp?.minRange}-${cmp?.maxRange}` : 'Positive-Negative'}</td>
                                                                                                     <td>{resultObj.result || "-"}</td>
                                                                                                 </tr>
-                                                                                                <tr>
+                                                                                                {/* <tr>
                                                                                                     <td colSpan="4">
                                                                                                         <span className="fw-600">Note: </span>{selectedOption || "-"}
                                                                                                     </td>
-                                                                                                </tr>
+                                                                                                </tr> */}
                                                                                             </>
                                                                                         );
                                                                                     })

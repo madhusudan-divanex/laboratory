@@ -24,7 +24,7 @@ function ReportView() {
   const [allComments, setAllComments] = useState({});
   const [reportMeta, setReportMeta] = useState({});
   const [fullReportData, setFullReportData] = useState()
-  const [pdfLoading,setPdfLoading]=useState(false)
+  const [pdfLoading, setPdfLoading] = useState(false)
   const { profiles, labPerson, labAddress, labImg,
     rating, avgRating, labLicense, isRequest, isOwner, permissions } = useSelector(state => state.user)
   const [appointmentData, setAppointmentData] = useState({})
@@ -32,7 +32,10 @@ function ReportView() {
     try {
       const response = await getSecureApiData(`lab/appointment-data/${appointmentId}`)
       if (response.success) {
-        setTestId(response.data.subCatId)
+        const subCatIds = response.data.tests.flatMap(item =>
+          item.subCat.map(s => s.subCatId)
+        )
+        setTestId(subCatIds)
         setAppointmentData(response.data)
         setLoading(false)
       } else {
@@ -219,7 +222,7 @@ function ReportView() {
                       <h5 className="first_para fw-700 fz-20 mb-0">Final Diagnostic Report</h5>
                     </div>
                     <div>
-                      <button className="print-btn" disabled={pdfLoading} onClick={()=>setPdfLoading(true)}> <FontAwesomeIcon icon={faDownload} /> {pdfLoading?'Downloading...':'Download'} PDF</button>
+                      <button className="print-btn" disabled={pdfLoading} onClick={() => setPdfLoading(true)}> <FontAwesomeIcon icon={faDownload} /> {pdfLoading ? 'Downloading...' : 'Download'} PDF</button>
                     </div>
                   </div>
 
@@ -256,6 +259,11 @@ function ReportView() {
                         <h4 >{appointmentData?.doctorId?.name}</h4>
                         <p><span className="laboratory-phne">ID :</span> {appointmentData?.doctorId?.nh12}  </p>
                       </div>}
+                      {appointmentData?.manualDoctor && <div className="laboratory-bill-bx laboratory-sub-bx">
+                        <h6 className="my-0">Lab tests prescribed by the doctor</h6>
+                        <h4 >{appointmentData?.manualDoctor}</h4>
+                        {/* <p><span className="laboratory-phne">ID :</span> {appointmentData?.doctorId?.nh12}  </p> */}
+                      </div>}
                     </div>
                   </div>
                   <div className="laboratory-report-table mt-3">
@@ -287,7 +295,7 @@ function ReportView() {
                                   <tr>
                                     <td>{test.shortName} - {cmp.name}</td>
                                     <td>{cmp.unit || "-"}</td>
-                                    <td>{cmp?.optionType=='text'? `${cmp.minRange}-${cmp?.maxRange}` : "Positve-Negative"}</td>
+                                    <td>{cmp?.optionType == 'text' ? `${cmp.minRange}-${cmp?.maxRange}` : "Positve-Negative"}</td>
                                     <td>
                                       {resultObj.result}
                                     </td>
@@ -297,13 +305,13 @@ function ReportView() {
                                   </tr>
 
                                   {/* NOTE FULL ROW */}
-                                  {selectedNote && (
+                                  {/* {selectedNote && (
                                     <tr className="note-row">
                                       <td colSpan={5}>
                                         <strong>Note:</strong> {selectedNote}
                                       </td>
                                     </tr>
-                                  )}
+                                  )} */}
                                 </React.Fragment>
                               );
                             })
@@ -348,7 +356,7 @@ function ReportView() {
             </div>
           </div>
           <div className="d-none">
-            <LabReportPdf appointmentId={appointmentId} pdfLoading={pdfLoading} endLoading={()=>setPdfLoading(false)}/>
+            <LabReportPdf appointmentId={appointmentId} pdfLoading={pdfLoading} endLoading={() => setPdfLoading(false)} />
           </div>
           <div className="text-end">
             <Link to={-1} className="nw-thm-btn rounded-3 outline">Go Back</Link>

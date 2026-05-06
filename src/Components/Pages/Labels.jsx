@@ -29,7 +29,10 @@ function Labels() {
         try {
             const response = await getSecureApiData(`lab/appointment-data/${appointmentId}`)
             if (response.success) {
-                setTestId(response.data.subCatId)
+                const subCatIds = response.data.tests.flatMap(item =>
+                    item.subCat.map(s => s.subCatId)
+                )
+                setTestId(subCatIds)
                 setAppointmentData(response.data)
             } else {
                 toast.error(response.message)
@@ -38,12 +41,13 @@ function Labels() {
 
         }
     }
+    console.log(testId)
     useEffect(() => {
         fetchAppointmentData()
     }, [appointmentId])
     const fetchTestReport = async (testId) => {
         try {
-            const payload = { subCatId:testId, appointmentId };
+            const payload = { subCatId: testId, appointmentId };
             const response = await securePostData('lab/test-report-data', payload);
 
             if (response.success && response.data) {
