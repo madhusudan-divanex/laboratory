@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+    faCircleXmark,
     faCopy,
     faDownload,
     faPaperPlane,
@@ -62,9 +63,11 @@ function ReportsTabs() {
     const [selectedTest, setSelectedTest] = useState([''])       // catId dropdown array
     const [selections, setSelections] = useState({})
     const [manualDoctor, setManualDoctor] = useState()
+    const [selectedSample,setSelectedSample]=useState()
     const { profiles, labPerson, labAddress, labImg,
         rating, avgRating, labLicense, isRequest } = useSelector(state => state.user)
     const [isSaving, setIsSaving] = useState(false)
+    const [sampleForm, setSampleForm] = useState({ sampleContainer: '', condition: '', resultExpected: '', storageDetail: '' })
     const fetchAppointmentData = async (e) => {
         if (e?.preventDefault) e.preventDefault();
         const id = appointmentId || searchParams.get("appointmentId")
@@ -615,11 +618,19 @@ function ReportsTabs() {
             [catId]: checked ? ids : []
         }))
     }
-
+    async function addSample() {
+        const data={...sampleForm,patientId:appointmentData?.patientId?._id,appointmentData:appointmentData?._id}
+        try {
+            const res=await securePostData()
+        } catch (error) {
+            toast.error(error?.response?.data?.message)
+        }
+    }
     return (
         <>
             {loading ? <Loader />
-                : <div className="main-content flex-grow-1 p-3 overflow-auto">
+                :
+                <div className="main-content flex-grow-1 p-3 overflow-auto">
                     <div className="row mb-3">
                         <div className="d-flex align-items-center justify-content-between">
                             <div>
@@ -1157,16 +1168,22 @@ function ReportsTabs() {
 
                                                                     <ul className="appointment-booking-list">
                                                                         {testData?.map((t, key) =>
-                                                                            t?.sample?.map((item) =>
-                                                                                <>
-                                                                                    <li key={key} className="appoint-item sample-item "> {item?.type}-: {item?.volume}</li>
-                                                                                </>
-                                                                            ))}
+                                                                            <>
+                                                                                {t?.sample?.map((item) =>
+                                                                                    <>
+                                                                                        <li key={key} className="appoint-item sample-item "> {item?.type}-: {item?.volume}</li>
+                                                                                    </>
+                                                                                )}
+                                                                                {appointmentData?.samples?.find(item => item == t?.category) ? <div className="mt-3" >
+                                                                                    <button onClick={sampleCollected} className="collected-btn">Collected</button>
+                                                                                </div> :
+                                                                                    <div className="mt-3" >
+                                                                                        <button onClick={()=>setSelectedSample(t?._id)} data-bs-toggle="modal" data-bs-target="#collectSample" className="collected-btn">Collect</button>
+                                                                                    </div>}
+                                                                            </>
+                                                                        )}
                                                                     </ul>
 
-                                                                    {!isCollected && <div className="mt-3" >
-                                                                        <button onClick={sampleCollected} className="collected-btn">Mark Collected</button>
-                                                                    </div>}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1866,6 +1883,75 @@ function ReportsTabs() {
                 </div>
             </div>
             {/*  Edit Profile Popup End */}
+
+            <div className="modal step-modal fade" id="collectSample" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div className="modal-dialog modal-dialog-centered modal-md">
+                    <div className="modal-content rounded-5">
+                        <div className="d-flex align-items-center justify-content-between popup-nw-brd px-4 py-3">
+                            <div>
+                                <h6 className="lg_title mb-0">Sample</h6>
+                            </div>
+                            <div>
+                                <button type="button" className="" data-bs-dismiss="modal" aria-label="Close" style={{ color: "#00000040" }}>
+                                    <FontAwesomeIcon icon={faCircleXmark} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="modal-body px-4">
+                            <div className="row ">
+                                <form  className="col-lg-12">
+                                    <div className="text-center ">
+                                        <div className="model-permission-bx">
+                                            <img src="/admin-lab.png" alt="" />
+                                        </div>
+                                    </div>
+
+                                    <div className="custom-frm-bx">
+                                        <label htmlFor="">Container</label>
+                                        <input type="text" value={sampleForm?.sampleContainer}
+                                            onChange={(e) => setSampleForm({
+                                                ...sampleForm,
+                                                sampleContainer: e.target.value
+                                            })} className="form-control" placeholder="Purple Tube" />
+                                    </div>
+                                    <div className="custom-frm-bx">
+                                        <label htmlFor="">Condition</label>
+                                        <input type="text" value={sampleForm?.condition}
+                                            onChange={(e) => setSampleForm({
+                                                ...sampleForm,
+                                                condition: e.target.value
+                                            })} className="form-control" placeholder="Good" />
+                                    </div>
+                                    <div className="custom-frm-bx">
+                                        <label htmlFor="">Storage Detail</label>
+                                        <textarea rows={3} type="text" value={sampleForm?.storageDetail}
+                                            onChange={(e) =>
+                                                setSampleForm({
+                                                    ...sampleForm,
+                                                    storageDetail: e.target.value
+                                                })} className="form-control" placeholder="4°C —Refrigerated" />
+                                    </div>
+                                    <div className="custom-frm-bx">
+                                        <label htmlFor="">Result Expected</label>
+                                        <input type="text" value={sampleForm?.resultExpected}
+                                            onChange={(e) => setSampleForm({
+                                                ...sampleForm,
+                                                resultExpected: e.target.value
+                                            })} className="form-control" placeholder="4 hours" />
+                                    </div>
+
+
+                                    <div>
+                                        <button type="submit" className="nw-thm-btn w-100" data-bs-dismiss="modal"> Submit</button>
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </>
     )

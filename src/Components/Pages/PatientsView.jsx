@@ -31,6 +31,10 @@ function PatientsView() {
     const [customId, setCustomId] = useState()
     const [labReports, setLabReports] = useState([])
     const [pdfLoading, setPdfLoading] = useState(false)
+    const [cLabAp, setCLabAp] = useState(1)
+    const [tLabAp, setTLabAp] = useState()
+    const [cLabReport, setCLabReport] = useState(1)
+    const [tLabReport, setTLabReport] = useState()
     const fetchPatient = async () => {
         try {
             const response = await getSecureApiData(`patient/detail/${patientId}`);
@@ -49,12 +53,13 @@ function PatientsView() {
         }
     }
     const fetchLabPatient = async () => {
-        setIsLoading(true)
+        // setIsLoading(true)
         try {
-            const response = await getSecureApiData(`appointment/lab/past-appointments/${userId}/${patientId}`);
+            const response = await getSecureApiData(`appointment/lab/past-appointments/${userId}/${patientId}?page=${cLabAp}&limit=10`);
             if (response.success) {
                 setLabAppointments(response.data)
-                setIsLoading(false)
+                setTLabAp(response.totalPage)
+                // setIsLoading(false)
             } else {
                 toast.error(response.message)
                 // navigate('/tests')
@@ -67,10 +72,18 @@ function PatientsView() {
         if (userId) {
 
             fetchPatient()
-            fetchLabPatient()
-            fetchPatientReport()
         }
     }, [userId])
+    useEffect(() => {
+        if (userId) {
+            fetchPatientReport()
+        }
+    }, [userId, cLabReport])
+    useEffect(() => {
+        if (userId) {
+            fetchLabPatient()
+        }
+    }, [userId, cLabAp])
     const calculateAge = (dob) => {
         if (!dob) return "";
 
@@ -88,9 +101,10 @@ function PatientsView() {
 
     const fetchPatientReport = async () => {
         try {
-            const response = await getSecureApiData(`lab/patient-lab-report/${userId}/${patientId}`);
+            const response = await getSecureApiData(`lab/patient-lab-report/${userId}/${patientId}?page=${cLabReport}&limit=10`);
             if (response.success) {
                 setLabReports(response.data)
+                setTLabReport(response.pagination.totalPage)
             } else {
                 toast.error(response.message)
             }
@@ -535,6 +549,10 @@ function PatientsView() {
                                                             </div>
 
                                                         </div>
+                                                        {tLabAp > 1 && <div className="d-flex my-3 justify-content-between">
+                                                            <button onClick={() => setCLabAp(prev => prev - 1)} disabled={cLabAp == 1} className="nw-thm-btn outline">Prev</button>
+                                                            <button onClick={() => setCLabAp(prev => prev + 1)} disabled={cLabAp == tLabAp} className="nw-thm-btn">Next</button>
+                                                        </div>}
 
 
 
@@ -610,9 +628,9 @@ function PatientsView() {
                                                                             </div>
 
                                                                             <div className="text-start mt-3">
-                                                                                <button onClick={()=>setPdfLoading(item?.appointmentId?._id)} className="pdf-download-tbn py-2">
+                                                                                <button onClick={() => setPdfLoading(item?.appointmentId?._id)} className="pdf-download-tbn py-2">
                                                                                     <FontAwesomeIcon icon={faFilePdf} style={{ color: "#EF5350" }} />
-                                                                                    {pdfLoading==item?.appointmentId?._id?'Downloading...':'Download'} Report</button>
+                                                                                    {pdfLoading == item?.appointmentId?._id ? 'Downloading...' : 'Download'} Report</button>
 
                                                                             </div>
 
@@ -621,6 +639,10 @@ function PatientsView() {
                                                                     </div>
 
                                                                 </div>)}
+                                                        {tLabReport > 1 && <div className="d-flex my-3 justify-content-between">
+                                                            <button onClick={() => setCLabReport(prev => prev - 1)} disabled={cLabReport == 1} className="nw-thm-btn outline">Prev</button>
+                                                            <button onClick={() => setCLabReport(prev => prev + 1)} disabled={cLabReport == tLabReport} className="nw-thm-btn">Next</button>
+                                                        </div>}
                                                         {/* <div className="col-lg-6 col-md-6 col-sm-12 mb-3">
                                                         <div className="qrcode-prescriptions-bx">
                                                             <div className="admin-table-bx d-flex align-items-center justify-content-between qr-cd-headr">

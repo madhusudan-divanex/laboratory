@@ -298,7 +298,7 @@ function Dashboard() {
                               <td>
                                 <div className="admin-table-bx">
                                   <div className="admin-table-sub-bx">
-                                    <img src={item?.patientId?.profileImage ? `${base_url}/${item?.patientId?.profileImage}` : "/table-avatar.jpg"} alt="" />
+                                    <img src={item?.patientId?.profileImage ? `${base_url}/${item?.patientId?.profileImage}` : "/profile.png"} alt="" />
                                     <div className="admin-table-sub-details">
                                       <h6>{item?.patientId?.name} </h6>
                                       <p>ID: {item?.patientId?.nh12}</p>
@@ -321,14 +321,14 @@ function Dashboard() {
                                     }) : '-'}
                                   </li>
                                   <li className="admin-appoint-item">
-                                    Total Amount : ${item?.fees}
+                                    Total Amount : ₹ {item?.fees}
                                   </li>
                                 </ul>
                               </td>
                               <td>
                                 <ul className="admin-test-list">
-                                  {item?.testId?.map((item, key) =>
-                                    <li className="admin-test-item" key={key}>{item?.shortName}</li>)}
+                                  {item?.tests?.map((item, key) =>
+                                    <li className="admin-test-item" key={key}>{item?.category?.name}</li>)}
                                   {/* <li className="admin-test-item">Haemoglobin</li> */}
                                 </ul>
                               </td>
