@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useRef, useState } from "react"
 import { getSecureApiData, securePostData } from "../../services/api"
 import { toast } from "react-toastify"
-import { NavLink, useParams } from "react-router-dom"
+import { Link, NavLink, useParams } from "react-router-dom"
 import { useSelector } from "react-redux"
 import NeoHealthCardLabTemplates from "./Billing"
 import Loader from "../Layouts/Loader"
@@ -289,6 +289,9 @@ function NewInvoice() {
                   </div>
                 </div>
               </div>
+            </div>
+            <div className="text-end">
+              <Link to={-1}  className="nw-thm-btn outline">Go Back</Link>
             </div>
           </div>
 

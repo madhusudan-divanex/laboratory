@@ -63,7 +63,7 @@ function ReportsTabs() {
     const [selectedTest, setSelectedTest] = useState([''])       // catId dropdown array
     const [selections, setSelections] = useState({})
     const [manualDoctor, setManualDoctor] = useState()
-    const [selectedSample,setSelectedSample]=useState()
+    const [selectedSample, setSelectedSample] = useState()
     const { profiles, labPerson, labAddress, labImg,
         rating, avgRating, labLicense, isRequest } = useSelector(state => state.user)
     const [isSaving, setIsSaving] = useState(false)
@@ -443,16 +443,6 @@ function ReportsTabs() {
                 result: allComponentResults[testId]?.[index]?.result || "",
                 status: allComponentResults[testId]?.[index]?.status || ""
             }));
-            // const payload = {
-            //     labId: userId,
-            //     patientId: appointmentData.patientId,
-            //     testId,
-            //     appointmentId: appointmentData._id,
-            //     component: components,manual:{comment:allComments?.[testId],
-            //         name:allNames?.[testId]
-            //     },
-            //     remark
-            // };
             const formData = new FormData();
             formData.append('labId', userId)
             formData.append('patientId', appointmentData.patientId?._id)
@@ -475,11 +465,9 @@ function ReportsTabs() {
                     toast.error(response.message);
                 }
             } catch (err) {
-                console.error("Error saving report:", err);
-                toast.error("Failed to save report.");
+                toast.error(err?.response?.data?.message);
             } finally {
                 setLoading(false);
-                navigate(`/report-view/${appointmentData?._id}`)
             }
         }
         handleBack("person-tab");
@@ -618,10 +606,28 @@ function ReportsTabs() {
             [catId]: checked ? ids : []
         }))
     }
-    async function addSample() {
-        const data={...sampleForm,patientId:appointmentData?.patientId?._id,appointmentData:appointmentData?._id}
+    async function addSample(e) {
+        e.preventDefault()
+        const data = { ...sampleForm, forTestId: selectedSample?._id, patientId: appointmentData?.patientId?._id, appointmentId: appointmentData?._id }
+
         try {
-            const res=await securePostData()
+            const res = await securePostData(`appointment/lab/sample`, data)
+            if (res.success) {
+                const res = await getSecureApiData(`lab/appointment-data/${appointmentId}`)
+                if (res.success) {
+                    const subCatIds = res.data.tests.flatMap(item =>
+                        item.subCat.map(s => s.subCatId)
+                    )
+                    setTestId(subCatIds)
+                    setAppointmentData(res.data)
+                } else {
+                    toast.error(res.message)
+                }
+                toast.success(`${selectedSample?.subCategory} sample data saved`)
+                document.getElementById('closeSample')?.click()
+            } else {
+                toast.error(res.message)
+            }
         } catch (error) {
             toast.error(error?.response?.data?.message)
         }
@@ -1174,12 +1180,7 @@ function ReportsTabs() {
                                                                                         <li key={key} className="appoint-item sample-item "> {item?.type}-: {item?.volume}</li>
                                                                                     </>
                                                                                 )}
-                                                                                {appointmentData?.samples?.find(item => item == t?.category) ? <div className="mt-3" >
-                                                                                    <button onClick={sampleCollected} className="collected-btn">Collected</button>
-                                                                                </div> :
-                                                                                    <div className="mt-3" >
-                                                                                        <button onClick={()=>setSelectedSample(t?._id)} data-bs-toggle="modal" data-bs-target="#collectSample" className="collected-btn">Collect</button>
-                                                                                    </div>}
+                                                                                 
                                                                             </>
                                                                         )}
                                                                     </ul>
@@ -1890,17 +1891,17 @@ function ReportsTabs() {
                     <div className="modal-content rounded-5">
                         <div className="d-flex align-items-center justify-content-between popup-nw-brd px-4 py-3">
                             <div>
-                                <h6 className="lg_title mb-0">Sample</h6>
+                                <h6 className="lg_title mb-0">Sample for {selectedSample?.subCategory}</h6>
                             </div>
                             <div>
-                                <button type="button" className="" data-bs-dismiss="modal" aria-label="Close" style={{ color: "#00000040" }}>
+                                <button type="button" className="" id="closeSample" data-bs-dismiss="modal" aria-label="Close" style={{ color: "#00000040" }}>
                                     <FontAwesomeIcon icon={faCircleXmark} />
                                 </button>
                             </div>
                         </div>
                         <div className="modal-body px-4">
                             <div className="row ">
-                                <form  className="col-lg-12">
+                                <form onSubmit={addSample} className="col-lg-12">
                                     <div className="text-center ">
                                         <div className="model-permission-bx">
                                             <img src="/admin-lab.png" alt="" />
@@ -1943,7 +1944,7 @@ function ReportsTabs() {
 
 
                                     <div>
-                                        <button type="submit" className="nw-thm-btn w-100" data-bs-dismiss="modal"> Submit</button>
+                                        <button type="submit" className="nw-thm-btn w-100" > Submit</button>
                                     </div>
 
                                 </form>

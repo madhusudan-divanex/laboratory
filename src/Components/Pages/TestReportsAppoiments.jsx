@@ -432,7 +432,7 @@ function TestReportsAppoiments() {
                                     </Link>
                                   </li>
 
-                                  {item?.status=="approved" &&<li className="drop-item">
+                                  {(item?.status=="approved" || item?.status=="pending-report") &&<li className="drop-item">
                                     <NavLink to={`/report-tabs?appointmentId=${item?.customId}`} className="nw-dropdown-item" href="#">
                                       <img src="/reprt-icon.png" alt="" />
                                       Generate Report

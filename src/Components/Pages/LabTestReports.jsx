@@ -63,7 +63,7 @@ function LabTestReports() {
   }
 
   useEffect(() => {
-    if (appointmentData?.testId) {
+    if (appointmentData?.tests?.length!==0) {
       
       const ids = appointmentData.tests.flatMap(item =>
           item.subCat.map(s => s.subCatId)
@@ -72,7 +72,6 @@ function LabTestReports() {
     }
     fetchPtData()
   }, [appointmentData]);
-  console.log(testId)
   useEffect(() => {
     const fetchTestsOneByOne = async () => {
       if (testId.length === 0) return;
