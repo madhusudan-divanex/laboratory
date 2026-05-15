@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 import base_url from "../../../baseUrl";
 import { useSelector } from "react-redux";
 import Loader from "../Layouts/Loader";
+import LabSampleReceipt from "../Template/LabSampleReceipt";
 
 function TestReportsAppoiments() {
   const userId = localStorage.getItem('userId')
@@ -27,6 +28,7 @@ function TestReportsAppoiments() {
   const [employees, setEmployees] = useState([])
   const [labStaff, setLabStaff] = useState([])
   const [loading, setLoading] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState()
   const [filter, setFilter] = useState({
     status: 'approved', paymentStatus: '', dateFrom: null,
     dateTo: null, test: null, patientName: ''
@@ -431,8 +433,14 @@ function TestReportsAppoiments() {
                                       Appointment Details
                                     </Link>
                                   </li>
+                                  {item?.sample?.length !== 0 && <li className="drop-item">
+                                    <button onClick={() => setPdfLoading(item?._id)} className="nw-dropdown-item" href="#">
+                                      <img src="/reprt-icon.png" alt="" />
+                                      {pdfLoading ? 'Downloading...' : 'Download'} Collections
+                                    </button>
+                                  </li>}
 
-                                  {(item?.status=="approved" || item?.status=="pending-report") &&<li className="drop-item">
+                                  {(item?.status == "approved" || item?.status == "pending-report") && <li className="drop-item">
                                     <NavLink to={`/report-tabs?appointmentId=${item?.customId}`} className="nw-dropdown-item" href="#">
                                       <img src="/reprt-icon.png" alt="" />
                                       Generate Report
@@ -484,9 +492,9 @@ function TestReportsAppoiments() {
                           <td colSpan="7" className="text-center">
                             No test reports / appointments found.
                           </td>
-                          </tr>}
+                        </tr>}
 
-                        </tbody>
+                    </tbody>
                   </table>
                 </div>
               </div>
@@ -496,6 +504,9 @@ function TestReportsAppoiments() {
             <Link to={-1} className="nw-thm-btn rounded-3 outline" >
               Go Back
             </Link>
+          </div>
+          <div className="d-none">
+            <LabSampleReceipt appointmentId={pdfLoading} pdfLoading={pdfLoading} endLoading={() => setPdfLoading()} />
           </div>
         </div>}
 

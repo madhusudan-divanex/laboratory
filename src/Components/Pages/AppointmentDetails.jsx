@@ -113,8 +113,10 @@ function AppointmentDetails() {
                   </nav>
                 </div>
               </div>
-              <div>
+              <div className="d-flex gap-4">
                 <button disabled={pdfLoading} className="nw-thm-btn" onClick={()=>setPdfLoading(true)}>{pdfLoading?'Downloading...':'Download'}</button>
+                {/* <button disabled={pdfLoading} className="nw-thm-btn" onClick={()=>setPdfLoading(true)}>{pdfLoading?'Downloading... Collection':'Download Collection'}</button> */}
+
               </div>
             </div>
           </div>

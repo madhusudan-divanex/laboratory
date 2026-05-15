@@ -10,7 +10,7 @@ import { saveFcmToken } from "../../services/globalFunction";
 
 function Otp() {
   const navigate = useNavigate()
-  const dispatch =useDispatch()
+  const dispatch = useDispatch()
   const [searchParams] = useSearchParams()
   const [timer, setTimer] = useState(30);
   const contact = searchParams.get('contact')
@@ -66,7 +66,7 @@ function Otp() {
 
   const handleResendCode = async (e) => {
     e.preventDefault();
-    let data;
+    let data = {};
     if (isEmail) {
       data.email = contact
     } else {
@@ -134,7 +134,7 @@ function Otp() {
           localStorage.setItem('token', response.token)
           localStorage.setItem('userId', response.userId)
           localStorage.setItem('isOwner', response.isOwner);
-          
+
 
 
           toast.success('Login successfully')
@@ -161,7 +161,7 @@ function Otp() {
     }
     setTimer(30); // reset timer after resend
   }
-  
+
   return (
     <>
       <section className="admin-login-section ">

@@ -146,10 +146,8 @@ const LabReportPdf = ({ appointmentId, pdfLoading, endLoading }) => {
           {/* <MetaCol title="Appointment ID"     value={`${appointmentData?.customId || "----"}`} /> */}
           <MetaCol title="Lab Order Ref" value={appointmentData?.customId} />
           <MetaCol
-            title="Collected"
-            value={appointmentData?.collectionDate
-              ? new Date(appointmentData.collectionDate).toLocaleString("en-GB")
-              : "—"}
+            title="Lab Id"
+            value={labData?.nh12}
           />
           <MetaCol
             title="Reported"

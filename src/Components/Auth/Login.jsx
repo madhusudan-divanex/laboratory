@@ -52,7 +52,7 @@ function Login() {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true)
-    let data = { password: formData.password }
+    let data = { password: formData.password, withOtp: formData?.withOtp }
     if (formData.contactNumber) {
       data.contactNumber = formData.contactNumber
     }
